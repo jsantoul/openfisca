@@ -27,6 +27,7 @@ from PyQt4.QtGui import (QAction, QMenu, QTreeView, QTableView, QApplication, QP
 
 from PyQt4.QtCore import Qt, SIGNAL, QVariant, QString, QAbstractTableModel
 from pandas import DataFrame
+from numpy import isnan, isinf
 
 try:
     _fromUtf8 = QString.fromUtf8
@@ -203,7 +204,15 @@ class DataFrameModel(QAbstractTableModel):
             if isinstance(val, str) or isinstance(val, unicode):
                 return QString(val)
             else:
-                return QVariant(int(round(val)))
+                if isnan(val):
+                    return QString("NaN")
+                elif isinf(val):
+                    return QString("Inf")
+                else:
+                    if abs(val) <= 1:
+                        return QVariant(('%.3g' % val))
+                    else:
+                        return QVariant(int(round(val))) 
     
     def headerData(self, section, orientation, role):
         if role == Qt.DisplayRole:
@@ -487,3 +496,43 @@ class MyComboBox(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
         self.box = combobox
+
+from pandas import Index
+
+def testDf():
+    ''' creates test dataframe '''
+    data = {'int':[1,2,3], 'float':[1.5,2.5,3.5],
+            'string':['a','b','c'], 'nan':[np.nan,np.nan,np.nan]}
+    return DataFrame(data, index=Index(['AAA','BBB','CCC']),
+                     columns=['int','float','string','nan'])
+
+
+from pandas.sandbox.qtpandas import DataFrameWidget
+from PyQt4.QtGui import (QDialog, QVBoxLayout)
+
+
+class Form(QDialog):
+    def __init__(self,parent=None):
+        super(Form,self).__init__(parent)
+
+        df = testDf() # make up some data
+        widget = DataFrameWidget(df)
+        widget.resizeColumnsToContents()
+
+        layout = QVBoxLayout()
+        layout.addWidget(widget)
+        self.setLayout(layout)
+
+if __name__=='__main__':
+    import sys
+    import numpy as np
+
+    app = QApplication(sys.argv)
+    form = Form()
+    form.show()
+    app.exec_()
+
+
+
+
+

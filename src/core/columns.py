@@ -35,20 +35,23 @@ class Column(object):
         Column.count += 1
         self._default = default
         self._dtype = float
-
+       
 class IntCol(Column):
     '''
     A column of integer
     '''
-    def __init__(self, label = None, default = 0):
+    def __init__(self, label = None, default = 0, unit= 'ind', start = None, end = None):
         super(IntCol, self).__init__(label, default)
         self._dtype = np.float32
+        self.unit = unit
+        self.start = start
+        self.end = end 
         
 class EnumCol(IntCol):
     '''
     A column of integer with an enum
     '''
-    def __init__(self, enum=None, label = None, default = 0):
+    def __init__(self, enum=None, label = None, default = 0, unit= 'ind', start = None, end = None):
         super(EnumCol, self).__init__(label, default)
         self._dtype = np.int16
         if isinstance(enum, Enum):
@@ -60,9 +63,12 @@ class BoolCol(Column):
     '''
     A column of boolean
     '''
-    def __init__(self, label = None, default = False):
+    def __init__(self, label = None, default = False, unit= 'ind', start = None, end = None):
         super(BoolCol, self).__init__(label, default)
         self._dtype = np.bool
+        self.unit = unit
+        self.start = start
+        self.end = end
         
 class FloatCol(Column):
     '''
@@ -143,8 +149,27 @@ class Prestation(Column):
         prestation._parents.add(self)
 
 class BoolPresta(Prestation, BoolCol):
-    def __init__(self, func, unit= 'ind', label = None, start = None, end = None):
-        BoolCol.__init__(self, label)
+    '''
+    A Prestation inheriting from BoolCol
+    '''
+    def __init__(self, func, unit = 'ind', label = None, start = None, end = None):
+        BoolCol.__init__(self, label = label, unit = unit, start = start, end = end)
+        Prestation.__init__(self, func, unit, label, start, end)
+
+class IntPresta(Prestation, IntCol):
+    '''
+    A Prestation inheriting from IntCol
+    '''
+    def __init__(self, func, unit = 'ind', label = None, start = None, end = None):
+        IntCol.__init__(self, label = label, unit = unit,  start = start, end = end)
+        Prestation.__init__(self, func, unit, label, start, end)
+
+class EnumPresta(Prestation, EnumCol):
+    '''
+    A Prestation inheriting from EnumCol
+    '''
+    def __init__(self, func, unit = 'ind', label = None, enum = None, start = None, end = None):
+        EnumCol.__init__(self, enum = enum, label = label, unit = unit,  start = start, end = end)
         Prestation.__init__(self, func, unit, label, start, end)
 
 

@@ -22,6 +22,8 @@ This file is part of openFisca.
 """
 
 import platform
+
+from os import path
 from PyQt4.QtCore import (SIGNAL, SLOT, Qt, QSettings, QVariant, QSize, QPoint, 
                           PYQT_VERSION_STR, QT_VERSION_STR, QLocale)
 from PyQt4.QtGui import (QMainWindow, QWidget, QGridLayout, QMessageBox, QKeySequence,
@@ -30,17 +32,32 @@ from PyQt4.QtGui import (QMainWindow, QWidget, QGridLayout, QMessageBox, QKeySeq
 
 from Config import CONF, VERSION, ConfigDialog, SimConfigPage, PathConfigPage, CalConfigPage
 from widgets.Parametres import ParamWidget
-from widgets.Composition import ScenarioWidget
 from widgets.Output import Graph, OutTable
 from widgets.AggregateOuput import AggregateOutputWidget
 from widgets.Calibration import CalibrationWidget
+from widgets.Inflation import InflationWidget
 from widgets.ExploreData import ExploreDataWidget
-from france.data import InputTable
-from france.model import ModelFrance
+from widgets.Inequality import InequalityWidget
 from core.datatable import DataTable, SystemSf
-from core.utils import gen_output_data, gen_aggregate_output, Scenario
+from core.utils import gen_output_data, gen_aggregate_output
 from core.qthelpers import create_action, add_actions, get_icon
 import gc
+
+#
+#        if country == 'france':
+from france.data import InputTable
+from france.model import ModelSF
+from core.utils import Scenario
+from france.widgets.Composition import ScenarioWidget
+#        elif country == 'tunisia':
+#            from tunisia.data import InputTable
+#            from tunisia.model import ModelSF
+#            from tunisia.utils import Scenario
+#            from tunisia.widgets.Composition import ScenarioWidget
+#        global InputTable, ModelSF, Scenario, ScenarioWidget
+
+
+
 
 class MainWindow(QMainWindow):
     def __init__(self, parent = None):
@@ -48,6 +65,7 @@ class MainWindow(QMainWindow):
         self.dirty = False
         self.isLoaded = False
         self.calibration_enabled = False
+        self.inflation_enabled = False
         self.aggregate_enabled = False
 
         self.setObjectName("MainWindow")
@@ -82,6 +100,35 @@ class MainWindow(QMainWindow):
             # each update (there is nothing there for now, but it could 
             # be useful some day...
         
+        self.start()
+        
+    def start(self, restart = False):
+
+
+        country = CONF.get('simulation', 'country')
+        self.old_country = country
+        
+#        if restart is True:
+#            del InputTable, ModelSF, Scenario, ScenarioWidget 
+#            self.reset_aggregate()
+#            del self.scenario
+#            
+#            del (self._parametres, self._menage, self._graph, self._table, 
+#                 self._aggregate_output, self._dataframe_widget, 
+#                 self._inequality_widget)
+#
+#        if country == 'france':
+#            from france.data import InputTable
+#            from france.model import ModelSF
+#            from core.utils import Scenario
+#            from france.widgets.Composition import ScenarioWidget
+#        elif country == 'tunisia':
+#            from tunisia.data import InputTable
+#            from tunisia.model import ModelSF
+#            from tunisia.utils import Scenario
+#            from tunisia.widgets.Composition import ScenarioWidget
+#        global InputTable, ModelSF, Scenario, ScenarioWidget
+        
         self.scenario = Scenario()
         # Preferences
         self.general_prefs = [SimConfigPage, PathConfigPage, CalConfigPage]
@@ -92,6 +139,7 @@ class MainWindow(QMainWindow):
         # Dockwidgets creation
         self.splash.showMessage("Creating widgets...", Qt.AlignBottom | Qt.AlignCenter | 
                                 Qt.AlignAbsolute, QColor(Qt.black))
+
 
         self.create_dockwidgets()
         self.populate_mainwidow()
@@ -125,6 +173,7 @@ class MainWindow(QMainWindow):
         self.action_refresh_aggregate   = create_action(self, u'Calculer aggrégats', shortcut = 'F10', icon = 'calculator_blue.png', triggered = self.refresh_aggregate)
 
         self.action_calibrate = create_action(self, u'Caler les poids', shortcut = 'CTRL+K', icon = 'scale22.png', triggered = self.calibrate)
+        self.action_inflate = create_action(self, u'Inflater les montants', shortcut = 'CTRL+I', icon = 'scale22.png', triggered = self.inflate)
 
         action_bareme = create_action(self, u'Barème', icon = 'bareme22.png', toggled = self.modeBareme)
         action_cas_type = create_action(self, u'Cas type', icon = 'castype22.png', toggled = self.modeCasType)
@@ -135,7 +184,7 @@ class MainWindow(QMainWindow):
         self.mode = 'bareme'
         action_bareme.trigger()
 
-        simulation_actions = [self.action_refresh_bareme, self.action_refresh_aggregate , None, self.action_calibrate, None, action_bareme, action_cas_type, None, action_mode_reforme]
+        simulation_actions = [self.action_refresh_bareme, self.action_refresh_aggregate , None, self.action_calibrate, self.action_inflate, None, action_bareme, action_cas_type, None, action_mode_reforme]
         add_actions(self.simulation_menu, simulation_actions)
         
         # Menu Help
@@ -154,7 +203,7 @@ class MainWindow(QMainWindow):
         # Toolbar
         self.main_toolbar = self.create_toolbar(u"Barre d'outil", 'main_toolbar')
         toolbar_actions = [action_export_png, action_export_csv, None, self.action_refresh_bareme,
-                           self.action_refresh_aggregate, None, self.action_calibrate, None,
+                           self.action_refresh_aggregate, None, self.action_calibrate, None, self.action_inflate, None,
                             action_bareme, action_cas_type, None, action_mode_reforme]
         add_actions(self.main_toolbar, toolbar_actions)
 
@@ -163,6 +212,7 @@ class MainWindow(QMainWindow):
         self.connect(self._parametres, SIGNAL('changed()'), self.changed_param)
         self.connect(self._aggregate_output, SIGNAL('calculated()'), self.calculated)
         self.connect(self, SIGNAL('weights_changed()'), self.refresh_aggregate)
+        self.connect(self, SIGNAL('inflated()'), self.refresh_aggregate)
         self.connect(self, SIGNAL('bareme_only()'), self.switch_bareme_only)
         
         # Window settings
@@ -181,8 +231,16 @@ class MainWindow(QMainWindow):
                                 Qt.AlignAbsolute, QColor(Qt.black))
         
         self.enable_aggregate(True)
-        
+
+        self.splash.showMessage("Refreshing bareme...", Qt.AlignBottom | Qt.AlignCenter | 
+                                Qt.AlignAbsolute, QColor(Qt.black))        
         self.refresh_bareme()
+        
+        if self.aggregate_enabled:
+            self.splash.showMessage("Refreshing aggregate...", Qt.AlignBottom | Qt.AlignCenter | 
+                                    Qt.AlignAbsolute, QColor(Qt.black))        
+
+            self.refresh_aggregate()
         
         self.isLoaded = True
         self.splash.hide()
@@ -195,12 +253,13 @@ class MainWindow(QMainWindow):
 
     def create_dockwidgets(self):
         # Création des dockwidgets
-        self._parametres = ParamWidget('data/param.xml', self)
+        self._parametres = ParamWidget(self)
         self._menage = ScenarioWidget(self.scenario, self)
         self._graph = Graph(self)
         self._table = OutTable(self)
         self._aggregate_output = AggregateOutputWidget(self)
         self._dataframe_widget = ExploreDataWidget(self)
+        self._inequality_widget = InequalityWidget(self)
         
     def populate_mainwidow(self):
         '''
@@ -212,9 +271,12 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.LeftDockWidgetArea, self._table)
         self.addDockWidget(Qt.LeftDockWidgetArea, self._aggregate_output)
         self.addDockWidget(Qt.LeftDockWidgetArea, self._dataframe_widget)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self._inequality_widget)
+        
         self.tabifyDockWidget(self._dataframe_widget, self._aggregate_output)
         self.tabifyDockWidget(self._aggregate_output, self._table)
         self.tabifyDockWidget(self._table, self._graph)
+        self.tabifyDockWidget(self._graph, self._inequality_widget)
         
     def global_callback(self):
         """Global callback"""
@@ -230,14 +292,21 @@ class MainWindow(QMainWindow):
             # liberate some memory before loading new data
             self.reset_aggregate()
             gc.collect()
+            
             fname = CONF.get('paths', 'survey_data/file')
-            self.survey = DataTable(InputTable, survey_data = fname)
-            self._dataframe_widget.set_dataframe(self.survey.table)
-            return True
+            country = CONF.get('simulation','country')
+            country_fname = path.join(country,'data','survey.h5')
+            if path.isfile(fname):
+                self.survey = DataTable(InputTable, survey_data = fname)
+                return True
+            elif path.isfile(country_fname):
+                self.survey = DataTable(InputTable, survey_data = country_fname)
+#            self.survey.inflate() #to be activated when data/inflate.csv is fixed
+                return True
         except Exception, e:
             self.aggregate_enabled = False
             QMessageBox.warning(self, u"Impossible de lire les données", 
-                                u"OpenFisca n'a pas réussi à lire les données d'enquête et passe en mode barème. L'erreur suivante a été renvoyé:\n%s\n\nVous pouvez charger des nouvelles données d'enquête dans Fichier>Paramètres>Chemins>Données d'enquête"%e)
+                                u"OpenFisca n'a pas réussi à lire les données d'enquête et passe en mode barème. L'erreur suivante a été renvoyée:\n%s\n\nVous pouvez charger des nouvelles données d'enquête dans Fichier>Paramètres>Chemins>Données d'enquête"%e)
             self.emit(SIGNAL('baremeOnly()'))
             return False
         finally:
@@ -255,8 +324,10 @@ class MainWindow(QMainWindow):
             self._aggregate_output.setEnabled(True)
             self._aggregate_output.show()
             self._dataframe_widget.show()
+            self._inequality_widget.show()
             self.action_refresh_aggregate.setEnabled(True)
             self.action_calibrate.setEnabled(True)
+            self.action_inflate.setEnabled(True)
         else:
             self.switch_bareme_only()
 
@@ -265,8 +336,10 @@ class MainWindow(QMainWindow):
             self._aggregate_output.setEnabled(False)
             self._aggregate_output.hide()
             self._dataframe_widget.hide()
+            self._inequality_widget.hide()
             self.action_refresh_aggregate.setEnabled(False)
             self.action_calibrate.setEnabled(False)
+            self.action_inflate.setEnabled(False)
 
     def reset_aggregate(self):
         '''
@@ -274,17 +347,30 @@ class MainWindow(QMainWindow):
         '''
         self.survey = None
         self.survey_outputs = None
+        self.survey_outputs_default = None
         self._dataframe_widget.clear()
         self._aggregate_output.clear()
+        gc.collect()
 
-    def calibrate(self):    
+    def calibrate(self):
+        '''
+        Launch Calibration widget
+        '''
         # liberate some memory before loading new data
         calibration = CalibrationWidget(inputs = self.survey, outputs = self.survey_outputs, parent = self)
         calibration.exec_()
+        
+    def inflate(self):
+        '''
+        Launch Calibration widget
+        '''
+        inflation = InflationWidget(inputs = self.survey, parent = self)
+        inflation.exec_()
                 
     def modeReforme(self, b):
         self.reforme = b
         self.changed_bareme()
+        self.changed_aggregate()
 
     def modeBareme(self):
         self.mode = 'bareme'
@@ -305,47 +391,64 @@ class MainWindow(QMainWindow):
                                  msg, 
                                  QMessageBox.Ok, QMessageBox.NoButton)
             return False
-        # Si oui, on lance le calcul
+        # If it is consistent starts the computation
         QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
         self.statusbar.showMessage(u"Calcul en cours...")
         self.action_refresh_bareme.setEnabled(False)
         # set the table model to None before changing data
         self._table.clearModel()
-        
-        P_default = self._parametres.getParam(defaut = True)    
-        P_courant = self._parametres.getParam(defaut = False)
-        
+                
         input_table = DataTable(InputTable, scenario = self.scenario)
-
-        population_courant = SystemSf(ModelFrance, P_courant, P_default)
-        population_courant.set_inputs(input_table)
-        data_courant = gen_output_data(population_courant)
-
+        output, output_default = self.preproc(input_table)
+        data = gen_output_data(output)
+        
         if self.reforme:
-            population_default = SystemSf(ModelFrance, P_default, P_default)
-            population_default.set_inputs(input_table)
-            data_default = gen_output_data(population_default)
-            data_courant.difference(data_default)
+            output_default.reset()
+            data_default = gen_output_data(output_default)
+            data.difference(data_default)
         else:
-            data_default = data_courant
-        self._table.updateTable(data_courant, reforme = self.reforme, mode = self.mode, dataDefault = data_default)
-        self._graph.updateGraph(data_courant, reforme = self.reforme, mode = self.mode, dataDefault = data_default)
+            data_default = data
+            
+        self._table.updateTable(data, reforme = self.reforme, mode = self.mode, dataDefault = data_default)
+        self._graph.updateGraph(data, reforme = self.reforme, mode = self.mode, dataDefault = data_default)
 
         self.statusbar.showMessage(u"")
         QApplication.restoreOverrideCursor()
-    
-    def compute_aggregate(self):
-        P_default = self._parametres.getParam(defaut = True)    
-        P_courant = self._parametres.getParam(defaut = False)
-        
-        input_table = self.survey
 
-        output_table = SystemSf(ModelFrance, P_courant, P_default)
-        output_table.set_inputs(input_table)
+
+    def preproc(self, input_table):
+        '''
+        Prepare the output values according to the ModelSF definitions/Reform status/input_table
+        '''
+        P_default = self._parametres.getParam(defaut = True)    
+        P         = self._parametres.getParam(defaut = False)
         
-        output_table.calculate()
+        output = SystemSf(ModelSF, P, P_default)
+        output.set_inputs(input_table)
+                
+        if self.reforme:
+            output_default = SystemSf(ModelSF, P_default, P_default)
+            output_default.set_inputs(input_table)
+        else:
+            output_default = output
+    
+        return output, output_default
+
+    def calculate_all(self):
+        '''
+        Computes all prestations
+        '''
+        input_table = self.survey
+        output, output_default = self.preproc(input_table)
         
-        return output_table
+        output.calculate()
+        if self.reforme:
+            output_default.reset()
+            output_default.calculate()
+        else:
+            output_default = output
+    
+        return output, output_default
     
     def refresh_aggregate(self):
         QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
@@ -356,16 +459,35 @@ class MainWindow(QMainWindow):
         self._aggregate_output.clear()
         self._dataframe_widget.clear()
         self.survey_outputs = None
+        self.survey_outputs_default = None
         gc.collect()
 
-        self.survey_outputs = self.compute_aggregate()
+        self.survey_outputs, self.survey_outputs_default = self.calculate_all()
 
-        self._dataframe_widget.set_dataframe(self.survey_outputs.table)
-        data_courant = gen_aggregate_output(self.survey_outputs)
-        self._aggregate_output.update_output(data_courant, self.survey.description)
+        self.refresh_dataframes()
+        
+        # Compute aggregates
+        data = gen_aggregate_output(self.survey_outputs)
+        descr = [self.survey.description, self.survey_outputs.description]
+        if self.reforme:
+            data_default = gen_aggregate_output(self.survey_outputs_default)
+            self._aggregate_output.update_output(data, descriptions = descr, default = data_default)
+        else:
+            self._aggregate_output.update_output(data, descriptions = descr)
         
         self.statusbar.showMessage(u"")
         QApplication.restoreOverrideCursor()
+
+
+    def refresh_dataframes(self):
+        '''
+        Populates dataframes in dataframe_widget
+        '''
+        self._dataframe_widget.add_dataframe(self.survey.table, name = "input")
+        self._dataframe_widget.add_dataframe(self.survey_outputs.table, name = "output")
+        if self.reforme:
+            self._dataframe_widget.add_dataframe(self.survey_outputs.table, name = "output_default")
+
         
     
     def closeEvent(self, event):
@@ -404,6 +526,9 @@ class MainWindow(QMainWindow):
                           ''')
 
     def apply_settings(self):
+        country = CONF.get('simulation', 'country')
+        if not self.old_country == country:
+            self.start(restart = True) 
         """Apply settings changed in 'Preferences' dialog box"""
         self.XAXIS = CONF.get('simulation', 'xaxis')
         if not self.XAXIS == self.oldXAXIS:
@@ -413,6 +538,8 @@ class MainWindow(QMainWindow):
             self.refresh_bareme()
         if self.calibration_enabled:
             self.action_calibrate.setEnabled(True)
+        if self.inflation_enabled:
+            self.action_inflate.setEnabled(True)
         if self.aggregate_enabled:
             self.action_refresh_aggregate.setEnabled(True)
 
@@ -434,14 +561,21 @@ class MainWindow(QMainWindow):
     
     def changed_param(self):
         self.statusbar.showMessage(u"Appuyez sur F9/F10 pour lancer la simulation")
+        self.action_refresh_bareme.setEnabled(True)
         if self.aggregate_enabled:
             self.action_refresh_aggregate.setEnabled(True)
-                
-        self.action_refresh_bareme.setEnabled(True)
+
+            
+    def changed_aggregate(self):
+        self.statusbar.showMessage(u"Appuyez sur F10 pour lancer la simulation")
+        if self.aggregate_enabled:
+            self.action_refresh_aggregate.setEnabled(True)
             
     def calculated(self):
         self.statusbar.showMessage(u"Aggrégats calculés")
         self.emit(SIGNAL('aggregate_calculated()'))
         self.action_refresh_aggregate.setEnabled(False)
+        self._inequality_widget.set_data(self.survey_outputs)
+        self._inequality_widget.refresh()
             
         

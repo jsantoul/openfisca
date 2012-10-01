@@ -23,7 +23,7 @@ This file is part of openFisca.
 
 from __future__ import division
 from numpy import (round, ceil, floor, maximum as max_, minimum as min_, 
-                   logical_not as not_)
+                   logical_not as not_, arange)
 from france.data import QUIFAM, QUIMEN
 from france.pfam import nb_enf
 
@@ -70,7 +70,10 @@ def _typ_men(isol, af_nbenf):
             
     
 def _revdisp_i(rev_trav, pen, rev_cap, ir_lps, psoc, ppe, impo):
-    '''Revenu disponible - individuel'''
+    '''
+    Revenu disponible
+    'ind'
+    '''
     return rev_trav + pen + rev_cap + ir_lps + psoc + ppe + impo
 
 def _revdisp(revdisp_i, _option = {'revdisp_i': ALL}):
@@ -89,6 +92,76 @@ def _nivvie(revdisp, uc):
     'men'
     '''
     return revdisp/uc
+
+def _revnet_i(rev_trav, pen, rev_cap):
+    '''
+    Revenu net individuel
+    'ind'
+    '''
+    return rev_trav + pen + rev_cap 
+
+def _revnet(revnet_i, _option = {'revnet_i': ALL}):
+    '''
+    Revenu net du ménage
+    'ind'
+    '''
+    r = 0
+    for rev in revnet_i.itervalues():
+        r += rev
+    return r
+
+def _nivvie_net(revnet, uc):
+    '''
+    Niveau de vie net du ménage
+    'men'
+    '''
+    return revnet/uc
+
+
+def _revini_i(rev_trav, pen, rev_cap, cotpat_contrib, cotsal_contrib):
+    '''
+    Revenu initial individuel
+    'ind'
+    '''
+    return rev_trav + pen + rev_cap - cotpat_contrib - cotsal_contrib
+
+def _revini(revini_i, _option = {'revini_i': ALL}):
+    '''
+    Revenu initial du ménage
+    'ind'
+    '''
+    r = 0
+    for rev in revini_i.itervalues():
+        r += rev
+    return r
+
+def _nivvie_ini(revini, uc):
+    '''
+    Niveau de vie initial du ménage
+    'men'
+    '''
+    return revini/uc
+
+
+
+
+def _revprim_i(rev_trav, rev_cap, cotpat, cotsal):
+    '''
+    Revenu initial individuel
+    'ind'
+    '''
+    return rev_trav + rev_cap - cotpat - cotsal
+
+def _revprim(revprim_i, _option = {'revprim_i': ALL}):
+    '''
+    Revenu net du ménage
+    'ind'
+    '''
+    r = 0
+    for rev in revprim_i.itervalues():
+        r += rev
+    return r
+
 
 def _rev_trav(sal_net, rag, ric, rnc):
     '''Revenu du travail'''
@@ -117,23 +190,104 @@ def _cotsoc_lib(csg_cap_lib, prelsoc_cap_lib, crds_cap_lib):
 def _rev_cap(fon, rev_cap_bar, cotsoc_bar, rev_cap_lib, cotsoc_lib, imp_lib, rac):
     '''Revenus du patrimoine'''
     return fon + rev_cap_bar + cotsoc_bar + rev_cap_lib + cotsoc_lib + imp_lib + rac
-
+ 
 def _psoc(pfam, mini, logt):
     '''Prestations sociales'''
     return pfam + mini + logt
 
 def _pfam(af, cf, ars, aeeh, paje, asf, crds_pfam):
-    ''' Prestations familiales '''
+    '''
+    Prestations familiales
+    '''
     return af + cf + ars + aeeh + paje + asf + crds_pfam
 
 def _mini(aspa, aah, caah, asi, rsa, aefa, api, ass):
-    ''' Minima sociaux '''
+    '''
+    Minima sociaux
+    '''
     return aspa + aah + caah + asi + rsa + aefa + api + ass
 
 def _logt(apl, als, alf, alset, crds_lgtm):
-    ''' Prestations logement '''
+    '''
+    Prestations logement
+    '''
     return apl + als + alf + alset + crds_lgtm
 
 def _impo(irpp):
-    '''Impôts directs'''
+    '''
+    Impôts directs
+    '''
     return irpp
+
+def _crds(crdssal, crdsrst, crdscho, crds_cap_bar, crds_cap_lib, crds_pfam, crds_lgtm):
+    '''
+    Contribution au remboursemetn de la dette sociale
+    '''
+    return crdssal + crdsrst + crdscho + crds_cap_bar + crds_cap_lib + crds_pfam + crds_lgtm
+    
+def _csg(csgsali, csgsald, csgchoi, csgchod, csgrsti, csg_cap_lib, csg_cap_bar):
+    '''
+    Contribution sociale généralisée
+    '''
+    return csgsali + csgsald + csgchoi + csgchod + csgrsti + csg_cap_lib
+
+
+def _cotsoc_noncontrib(cotpat_noncontrib, cotsal_noncontrib, prelsoc_cap_lib, prelsoc_cap_bar):
+    '''
+    Cotisations sociales non contributives
+    '''
+    return cotpat_noncontrib + cotsal_noncontrib + prelsoc_cap_lib + prelsoc_cap_bar
+
+from core.utils import mark_weighted_percentiles
+
+def _decile(nivvie, champm, wprm):
+    '''
+    Décile de niveau de vie disponible
+    'men'
+    '''
+    labels = arange(1,11)
+    method = 2
+    decile, values = mark_weighted_percentiles(nivvie, labels, wprm*champm, method, return_quantiles=True)
+#    print values
+#    print len(values)
+#    print (nivvie*champm).min()
+#    print (nivvie*champm).max()
+#    print decile.min()
+#    print decile.max()
+#    print (nivvie*(decile==1)*champm*wprm).sum()/( ((decile==1)*champm*wprm).sum() )
+    return decile*champm
+
+def _decile_net(nivvie_net, champm, wprm):
+    '''
+    Décile de niveau de vie net
+    'men'
+    '''
+    labels = arange(1,11)
+    method = 2
+    decile, values = mark_weighted_percentiles(nivvie_net, labels, wprm*champm, method, return_quantiles=True)
+    return decile*champm
+
+
+
+def _pauvre50(nivvie, champm, wprm):
+    '''
+    Indicatrice de pauvreté à 50% du niveau de vie median
+    'men'
+    '''
+    labels = arange(1,3)
+    method = 2
+    percentile, values = mark_weighted_percentiles(nivvie, labels, wprm*champm, method, return_quantiles=True) 
+    threshold = .5*values[1]
+    return (nivvie <= threshold)*champm 
+
+def _pauvre60(nivvie, champm, wprm):
+    '''
+    Indicatrice de pauvreté à 60% du niveau de vie median
+    'men'
+    '''
+    labels = arange(1,3)
+    method = 2
+    percentile, values = mark_weighted_percentiles(nivvie, labels, wprm*champm, method, return_quantiles=True) 
+    threshold = .6*values[1]
+    return (nivvie <= threshold)*champm
+

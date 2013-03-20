@@ -128,17 +128,15 @@ class InequalityWidget(OpenfiscaPluginWidget):
         output = self.simulation.outputs
         WEIGHT = of_import(None, 'WEIGHT', self.simulation.country)
 
-        idx_weight = {'ind': output._inputs.index['ind'],
-                      'men': output._inputs.index['men']}
+        entities = ['ind', 'men']
         weights = {}
-        for entity, idx in idx_weight.iteritems():
-            weights[entity] = output._inputs.get_value(WEIGHT, idx)
+        for entity in entities:
+            weights[entity] = output._inputs.get_value(WEIGHT, entity)
         
         for varname, entities in self.vars.iteritems():
             for entity in entities:
-                
-                idx =  output.index[entity]
-                values  = output.get_value(varname, idx)
+            
+                values  = output.get_value(varname, entity)
                 
                 x, y = lorenz(values, weights[entity])
                 label = varname + ' (' + entity + ') ' 
@@ -170,10 +168,9 @@ class InequalityWidget(OpenfiscaPluginWidget):
         WEIGHT = of_import(None, 'WEIGHT', self.simulation.country)
         for varname, entities in self.vars.iteritems():
             for entity in entities:
-                idx =  output.index[entity]
-                val  = output.get_value(varname, idx)
-                weights = output._inputs.get_value(WEIGHT, idx)
-                champm = output._inputs.get_value('champm', idx)
+                val  = output.get_value(varname, entity)
+                weights = output._inputs.get_value(WEIGHT, entity)
+                champm = output._inputs.get_value('champm', entity)
 
             items = []
             # Compute mean

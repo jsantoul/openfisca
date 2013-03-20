@@ -533,7 +533,7 @@ class SurveySimulation(Simulation):
         for model in models:
             out_dct = {}
             inputs = model._inputs
-            idx = model.index[entity]
+            idx = entity
             try:
                 enum = inputs.description.get_col('qui'+entity).enum
                 people = [x[1] for x in enum]

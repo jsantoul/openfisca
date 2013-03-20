@@ -121,15 +121,14 @@ class DataTable(object):
         """
         Set the variable of all entity member to the value of the (head of) entity
         """
-        index = self.index[entity]
-        value = self.get_value(col, index)
+        value = self.get_value(col, entity)
         try:
             enum = self.description.get_col('qui'+entity).enum
         except:
             enum = self._inputs.description.get_col('qui'+entity).enum
         
         for member in enum:
-            self.set_value(col, value, index, opt = member[1])
+            self.set_value(col, value, entity, opt = member[1])
 
 
     def populate_from_survey_data(self, fname, year = None):
@@ -205,7 +204,7 @@ class DataTable(object):
         self._isPopulated = True
         
         # Initialize default weights
-        self.set_value(WEIGHT_INI, self.get_value(WEIGHT),self.index['ind'])
+        self.set_value(WEIGHT_INI, self.get_value(WEIGHT), 'ind')
         
 #        # TODO: activate for debug
 #        print self.table.get_dtype_counts()
@@ -217,19 +216,17 @@ class DataTable(object):
 #        
 #        print self.table.get_dtype_counts()
 
-    def get_value(self, varname, index = None, opt = None, sum_ = False):
+    def get_value(self, varname, entity = None, opt = None, sum_ = False):
         '''
         Read the value in an array
         
         Parameters
         ----------
-        index : dict
-             dict of the coordinates of each person in the array
-            - if index is none, returns the whole column (every person)
-            - if index is not none, return an array of length len(entity)
+        entity : str, default None
+                 if "ind" or None return every individual, else return individuals belongig to the entity
         opt : dict
              dict with the id of the person for which you want the value
-            - if opt is None, returns the value for the person 0 (i.e. 'vous' for 'foy', 'chef' for 'fam', 'pref' for 'men')
+            - if opt is None, returns the value for the person 0 (i.e. 'vous' for 'foy', 'chef' for 'fam', 'pref' for 'men' in the "france" case)
             - if opt is not None, return a dict with key 'person' and values for this person
         
         Returns
@@ -241,19 +238,23 @@ class DataTable(object):
         dflt = col._default
         dtyp = col._dtype
         var = np.array(self.table[varname].values, dtype = col._dtype)
-        if index is None:
+        
+        if entity is None:
+            entity = "ind"
+        
+        if entity =="ind":
             return var
-        nb = index['nb']
+        nb = self.index[entity]['nb']
         if opt is None:
             temp = np.ones(nb, dtype = dtyp)*dflt
-            idx = index[0]
+            idx = self.index[entity][0]
             temp[idx['idxUnit']] = var[idx['idxIndi']]
             return temp
         else:
             out = {}
             for person in opt:
                 temp = np.ones(nb, dtype = dtyp)*dflt
-                idx = index[person]
+                idx = self.index[entity][person]
                 temp[idx['idxUnit']] = var[idx['idxIndi']]
                 out[person] = temp
             if sum_ is False:
@@ -264,14 +265,17 @@ class DataTable(object):
                     sumout += val
                 return sumout
 
-    def set_value(self, varname, value, index, opt = None):
+    def set_value(self, varname, value, entity = None, opt = None):
         '''
         Sets the value of varname using index and opt
         '''
+        if entity is None:
+            entity = "ind"
+
         if opt is None:
-            idx = index[0]
+            idx = self.index[entity][0]
         else:
-            idx = index[opt]
+            idx = self.index[entity][opt]
 
         # this command should work on later pandas version...
         # self.table.ix[idx['idxIndi'], [varname]] = value
@@ -349,7 +353,16 @@ class SystemSf(DataTable):
                     self._primitives.add(input_varname)
         
     def set_inputs(self, inputs, country = None):
-        ''' sets the input DataTable '''
+        """ 
+        Set the input DataTable
+        
+        Parameters
+        ----------
+        inputs : DataTable, required
+                 The input variable datatable
+        country: str, default None
+                 The country of the simulation. this information is used to preprocess the inputs                
+        """
         if not isinstance(inputs, DataTable):
             raise TypeError('inputs must be a DataTable')
         # check if all primitives are provided by the inputs
@@ -410,7 +423,11 @@ class SystemSf(DataTable):
         if not col._enabled:
             return
         
-        idx = self.index[col._entity]
+#        idx = self.index[col._entity]
+
+        idx = col._entity
+        if idx is None:
+            idx = "ind"
 
         required = set(col.inputs)
         funcArgs = {}

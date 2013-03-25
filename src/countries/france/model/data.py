@@ -52,7 +52,7 @@ class InputTable(ModelDescription):
     age = AgesCol(label = u"âge" ,  val_type="age")
     agem = AgesCol(label = u"âge (en mois)", val_type="months")
     
-    zone_apl = EnumCol(label = u"zone apl", default = 2, entity= 'menage')
+    zone_apl = EnumCol(label = u"zone apl", default = 2, entity= 'men')
     loyer = IntCol(entity='men', val_type="monetary") # Loyer mensuel
     so = EnumCol(label = u"Statut d'occupation",
                  entity='men',
@@ -858,8 +858,8 @@ class InputTable(ModelDescription):
     restit_imp= IntCol()
         
     # to remove
-    champm = BoolCol()
-    wprm = FloatCol()
+    champm = BoolCol(entity='men')
+    wprm = FloatCol(entity='men')
     etr = IntCol()     
     coloc = BoolCol()
     csg_rempl = EnumCol(label = u"Taux retenu sur la CSG des revenus de remplacment",
@@ -874,11 +874,11 @@ class InputTable(ModelDescription):
     ass = IntCol()
     f5sq = IntCol()
     
-    m_afeamam = IntCol()
-    m_agedm   = IntCol()
-    m_clcam   = IntCol()
-    m_colcam  = IntCol()
-    m_mgamm   = IntCol()
-    m_mgdomm  = IntCol()
-    zthabm    = IntCol()  # Devrait être renommée tax
+    m_afeamam = IntCol(entity='men')
+    m_agedm   = IntCol(entity='men')
+    m_clcam   = IntCol(entity='men')
+    m_colcam  = IntCol(entity='men')
+    m_mgamm   = IntCol(entity='men')
+    m_mgdomm  = IntCol(entity='men')
+    zthabm    = IntCol(entity='men')  # Devrait être renommée tax
     # tax_hab= IntCol()    

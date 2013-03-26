@@ -40,7 +40,7 @@ class InputTable(ModelDescription):
 
     alr  = IntCol(label = u"Pension alimentaire reçue", val_type="monetary") # (f1ao, f1bo, f1co, f1do, f1eo)
     
-    hsup = IntCol( val_type="monetary")  # f1au
+    hsup = IntCol( label = "heures supplémentaires", val_type="monetary")  # (f1au, f1bu, f1cu, f1du, f1eu)
     inv  = BoolCol(label = u'invalide')
     alt  = BoolCol(label = u'garde alternée')
     cho_ld = BoolCol(label = 'chômeur de longue durée') # (f1ai, f1bi, f1ci, f1di, f1ei)
@@ -169,12 +169,14 @@ class InputTable(ModelDescription):
     f1cw = IntCol(entity= 'foy', val_type="monetary")
     f1dw = IntCol(entity= 'foy', val_type="monetary")
     
-    f1tv = IntCol(entity= 'foy', val_type="monetary")
-    f1uv = IntCol(entity= 'foy', val_type="monetary")
-    f1tw = IntCol(entity= 'foy', val_type="monetary")
-    f1uw = IntCol(entity= 'foy', val_type="monetary")
-    f1tx = IntCol(entity= 'foy', val_type="monetary")
-    f1ux = IntCol(entity= 'foy', val_type="monetary")
+    # Gain de levée d'option
+    #TODO: j'ai changé là mais pas dans le code, il faut chercher les f1uv 
+    # et les mettre en f1tvm comme pour sali
+    # Il faut aussi le faire en amont dans les tables
+    f1tv = IntCol(entity= 'ind', val_type="monetary") # (f1tv,f1uv)
+    f1tw = IntCol(entity= 'ind', val_type="monetary") # (f1tw,f1uw)
+    f1tx = IntCol(entity= 'ind', val_type="monetary") # (f1tx,f1ux)
+
     
     # RVCM
     # revenus au prélèvement libératoire

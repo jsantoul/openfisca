@@ -40,12 +40,23 @@ def from_one_to_three(table,entity):
     return vars_entity
   
 
+# on peut en profiter pour faire l'index ici ? Ca tournerait un peu plus vite
+# mais surtout de maniere plus "essentielle"
+
 for year in  ['2006']:  # available_years: 
+    print "debut de l annee %s" %year
     table_in_one = store.select('survey_'+str(year))
     for entity in ['ind','foy','men']: 
         key = 'survey_'+str(year) + '/'+str(entity)
-        vars_entity = from_one_to_three(table_in_one,entity)        
-        table_entity = table_in_one[vars_entity]
+        vars_entity = from_one_to_three(table_in_one,entity) 
+        if entity == 'foy':   
+            enum = 'qui'+entity
+            table_entity = table_in_one.ix[table_in_one[enum] < 2 ,['noi','idmen','idfoy'] + vars_entity]
+        elif entity == 'men':   
+            enum = 'qui'+entity
+            table_entity = table_in_one.ix[table_in_one[enum] == 0 ,['noi','idmen','idfoy'] + vars_entity]
+        else : 
+            table_entity = table_in_one[vars_entity]
         print key
         output.put(key, table_entity)
     del table_in_one
@@ -54,14 +65,11 @@ for year in  ['2006']:  # available_years:
 store.close()
 output.close()
 
-    
-    
-
-
-
-
-# get columns used by the tax and benefit system
-
-
-
-
+# test pour voir si les "lignes" sont nulles
+#enum = 'qui'+entity
+#table_in_one[enum] == 0
+#
+#voir = np.array(table_in_one.ix[table_in_one[enum] == 0,vars_entity])
+#voir[:,:-1] != 0
+#len(np.where( voir[:,:-1] != 0 )[0])
+#np.unique(np.where( voir != 0 )[1])

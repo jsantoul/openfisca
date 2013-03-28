@@ -35,7 +35,8 @@ class DataTable(object):
         * title [string]
         * comment [string]: text shown on the top of the first data item
     """
-    def __init__(self, model_description, survey_data = None, scenario = None, datesim = None, country = None):
+    def __init__(self, model_description, survey_data = None, scenario = None, datesim = None,
+                  country = None, num_table = 1):
         super(DataTable, self).__init__()
 
         # Init instance attribute
@@ -43,7 +44,12 @@ class DataTable(object):
         self.scenario = None
         self._isPopulated = False
         self.col_names = []
-        self.table = DataFrame()
+        if num_table == 1:
+            self.table = DataFrame()
+            self.table3 = {'ind' : DataFrame(), 'foy' : DataFrame(), 'men' : DataFrame() }            
+        else: 
+            self.table3 = {'ind' : DataFrame(), 'foy' : DataFrame(), 'men' : DataFrame() }
+            self.table  = DataFrame()
         self.index = {}
         self._nrows = 0
         
@@ -83,16 +89,7 @@ class DataTable(object):
         
         self.index = {'ind': {0: {'idxIndi':np.arange(self._nrows), 
                                   'idxUnit':np.arange(self._nrows)}, # Units stand for entities
-                      'nb': self._nrows},
-                      'noi': {}}
-        dct = self.index['noi']
-        nois = self.table.noi.values
-        listnoi = np.unique(nois)
-        for noi in listnoi:
-            idxIndi = np.sort(np.squeeze((np.argwhere(nois == noi))))
-            idxUnit = np.searchsorted(listnoi, nois[idxIndi])
-            temp = {'idxIndi':idxIndi, 'idxUnit':idxUnit}
-            dct.update({noi: temp}) 
+                      'nb': self._nrows}}
 
         for entity in entities:
             enum = self.description.get_col('qui'+entity).enum
@@ -116,6 +113,7 @@ class DataTable(object):
                 idxUnit = np.searchsorted(idxlist, idx[idxIndi])
                 temp = {'idxIndi':idxIndi, 'idxUnit':idxUnit}
                 dct.update({person: temp}) 
+    
     
     def propagate_to_members(self, entity , col):
         """
@@ -278,8 +276,7 @@ class DataTable(object):
             idx = self.index[entity][opt]
 
         # this command should work on later pandas version...
-        # self.table.ix[idx['idxIndi'], [varname]] = value
-
+#        self.table.ix[idx['idxIndi'], [varname]] = value
         # for now, we're doing it manually
         col = self.description.get_col(varname)
         values = self.table[varname].values

@@ -11,6 +11,7 @@ from datetime import datetime
 import gc
 import os
 from src.lib.datatable import DataTable, SystemSf
+from src.lib.datatable3 import DataTable3, SystemSf3
 from src.parametres.paramData import XmlReader, Tree2Object
 from src.lib.utils import gen_output_data, of_import
 from src import SRC_PATH
@@ -41,6 +42,7 @@ class Simulation(object):
         self.totaux_file = None
         self.param_file = None
         self.disabled_prestations = None
+        self.num_table = 1
         
     def _set_config(self, **kwargs):
         """
@@ -134,15 +136,26 @@ class Simulation(object):
         input_table : TODO: complete
         """
         P_default = self.P_default     
-        P         = self.P                
-        output = SystemSf(self.ModelSF, P, P_default, datesim = self.datesim, country = self.country)
-        output.set_inputs(input_table, country = self.country)
+        P         = self.P          
+        if input_table.num_table == 1:    
+            output = SystemSf(self.ModelSF, P, P_default, datesim = self.datesim, country = self.country)
+            output.set_inputs(input_table, country = self.country)
+                                
+            if self.reforme:
+                output_default = SystemSf(self.ModelSF, P_default, P_default, datesim = self.datesim, country = self.country)
+                output_default.set_inputs(input_table, country = self.country)
+            else:
+                output_default = output
+        elif input_table.num_table == 3:    
+            output = SystemSf3(self.ModelSF, P, P_default, datesim = self.datesim, country = self.country)
+            output.set_inputs(input_table, country = self.country)
+                                
+            if self.reforme:
+                output_default = SystemSf3(self.ModelSF, P_default, P_default, datesim = self.datesim, country = self.country)
+                output_default.set_inputs(input_table, country = self.country)
+            else:
+                output_default = output                
                 
-        if self.reforme:
-            output_default = SystemSf(self.ModelSF, P_default, P_default, datesim = self.datesim, country = self.country)
-            output_default.set_inputs(input_table, country = self.country)
-        else:
-            output_default = output
     
         output.disable(self.disabled_prestations)
         output_default.disable(self.disabled_prestations)
@@ -419,7 +432,7 @@ class SurveySimulation(Simulation):
             if hasattr(self, key):
                 setattr(self, key, val)
   
-    def set_survey(self, filename = None, datesim = None, country = None):
+    def set_survey(self, filename = None, datesim = None, country = None, num_table = 1):
         """
         Set survey input data
         """
@@ -432,15 +445,30 @@ class SurveySimulation(Simulation):
             country = self.country        
         elif country is not None:
             country = country
+        
+        if self.num_table not in [1,3] :
+            raise Exception("OpenFisca can be run with 1 or 3 tables only, "
+                            " please, choose between both.") 
+        else:
+            self.num_table = num_table  
             
         if filename is None:
             if country is not None:
-                filename = os.path.join(SRC_PATH, 'countries', country, 'data', 'survey.h5')
-        
-        self.survey = DataTable(self.InputTable, survey_data = filename, datesim = datesim, country = country)
-
+                if num_table == 1 :
+                    filename = os.path.join(SRC_PATH, 'countries', country, 'data', 'survey.h5')
+                else :
+                    filename = os.path.join(SRC_PATH, 'countries', country, 'data', 'survey3.h5')
+        if num_table == 1:            
+            self.survey = DataTable(self.InputTable, survey_data = filename, datesim = datesim,
+                                 country = country , num_table = num_table)
+        else:            
+            self.survey = DataTable3(self.InputTable, survey_data = filename, datesim = datesim,
+                                 country = country , num_table = num_table)
+            
         self._build_dicts(option = 'input_only')
-
+        
+       
+        
     def inflate_survey(self, inflators):
         """
         Inflate some variable of the survey data

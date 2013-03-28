@@ -32,31 +32,40 @@ def get_loyer_inflator(year):
 def build_aggregates():
 
     writer = None
-    years = range(2006,2010)
+    years = range(2006,2007)
     for year in years:        
         yr = str(year)
 #        fname = "Agg_%s.%s" %(str(yr), "xls")
         simu = SurveySimulation()
         simu.set_config(year = yr, country = country)
         simu.set_param()
-        simu.set_survey()
-        inflator = get_loyer_inflator(year)
-        simu.inflate_survey({'loyer' : inflator})
+        import time
+        deb3 = time.clock()
+        simu.set_survey(num_table=3)
         simu.compute()
+        fin3  = time.clock()
         
-        agg = Aggregates()
-        agg.set_simulation(simu)
-        agg.compute()
+        print "fin3"
+        
+#        deb1 = time.clock()
+        simu.set_survey(num_table=1)
+#        simu.compute()
+#        fin1  = time.clock()        
+        
+#        agg = Aggregates()
+#        agg.set_simulation(simu)
+#        agg.compute()
 
-        if writer is None:
-            writer = ExcelWriter(str(fname_all))
-        agg.aggr_frame.to_excel(writer, yr, index= False, header= True)
+#        if writer is None:
+#            writer = ExcelWriter(str(fname_all))
+#        agg.aggr_frame.to_excel(writer, yr, index= False, header= True)
         del simu
-        del agg
+#        del agg
         import gc
         gc.collect()
-    
-    writer.save()
+#    print fin1 - deb1
+    print fin3 - deb3
+#    writer.save()
 
 
 def diag_aggregates():
@@ -104,4 +113,4 @@ if __name__ == '__main__':
 #    diag_aggregates()
 #    test()
 
-    build_erf_aggregates()
+    build_aggregates()

@@ -2,23 +2,7 @@
 # Copyright © 2011 Clément Schaff, Mahdi Ben Jelloul
 
 """
-openFisca, Logiciel libre de simulation du système socio-fiscal français
-Copyright © 2011 Clément Schaff, Mahdi Ben Jelloul
 
-This file is part of openFisca.
-
-    openFisca is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    openFisca is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with openFisca.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from __future__ import division
@@ -26,32 +10,34 @@ import numpy as np
 from pandas import DataFrame, read_csv, HDFStore
 from src.lib.utils import of_import
 from src.lib.description import ModelDescription, Description
+import pdb
+import time
 
-
-
-class DataTable(object):
+# TODO : supprimer les num_table qui ne servent plus
+class DataTable3(object):
     """
     Construct a SystemSf object is a set of Prestation objects
         * title [string]
         * comment [string]: text shown on the top of the first data item
     """
-    def __init__(self, model_description, survey_data = None, scenario = None, datesim = None,
-                  country = None, num_table = 1):
-        super(DataTable, self).__init__()
 
+    
+        
+    def __init__(self, model_description, survey_data = None, scenario = None, datesim = None,
+                  country = None, num_table = 3):
+        super(DataTable3, self).__init__()
         # Init instance attribute
         self.description = None
         self.scenario = None
         self._isPopulated = False
         self.col_names = []
-        if num_table == 1:
-            self.table = DataFrame()
-            self.table3 = {'ind' : DataFrame(), 'foy' : DataFrame(), 'men' : DataFrame() }            
-        else: 
-            self.table3 = {'ind' : DataFrame(), 'foy' : DataFrame(), 'men' : DataFrame() }
-            self.table  = DataFrame()
+        self.table3 = {'ind' : DataFrame(), 'foy' : DataFrame(), 
+                       'men' : DataFrame(), 'fam' : DataFrame()  }
         self.index = {}
         self._nrows = 0
+        self.num_table = num_table
+        #TODO :est-ce le bon endroit ? 
+        self.list_entities = ['ind','men','foy','fam']
         
         if datesim is None:
             raise Exception('InputTable: datesim should be provided')
@@ -82,6 +68,8 @@ class DataTable(object):
             self.scenario = scenario
             scenario.populate_datatable(self)
         
+
+
     def gen_index(self, entities):
         '''
         Genrates indexex for the relevant entities
@@ -94,8 +82,8 @@ class DataTable(object):
         for entity in entities:
             enum = self.description.get_col('qui'+entity).enum
             try:
-                idx = getattr(self.table, 'id'+entity).values
-                qui = getattr(self.table, 'qui'+entity).values
+                idx = getattr(self.table3['ind'], 'id'+entity).values
+                qui = getattr(self.table3['ind'], 'qui'+entity).values
                 enum = self.description.get_col('qui'+entity).enum
             except:
                 raise Exception('DataTable needs columns %s and %s to build index with entity %s' %
@@ -113,27 +101,20 @@ class DataTable(object):
                 idxUnit = np.searchsorted(idxlist, idx[idxIndi])
                 temp = {'idxIndi':idxIndi, 'idxUnit':idxUnit}
                 dct.update({person: temp}) 
-    
-    
-    def propagate_to_members(self, entity , col):
-        """
-        Set the variable of all entity member to the value of the (head of) entity
-        """
-        value = self.get_value(col, entity)
-        try:
-            enum = self.description.get_col('qui'+entity).enum
-        except:
-            enum = self._inputs.description.get_col('qui'+entity).enum
-        
-        for member in enum:
-            self.set_value(col, value, entity, opt = member[1])
 
+    
+    def propagate_to_members(self, varname, var):
+        """
+        Set the variable var of all entity member to the value of the (head of) entity
+        """
+        print varname, var
 
     def populate_from_survey_data(self, fname, year = None):
         '''
         Populates a DataTable from survey data
         '''
-
+        list_entities = self.list_entities 
+        
         if self.country is None:
             raise Exception('DataTable: country key word variable must be set') 
                
@@ -141,16 +122,23 @@ class DataTable(object):
         INDEX = of_import(None, 'ENTITIES_INDEX', self.country)
         WEIGHT = of_import(None, 'WEIGHT', self.country)
         WEIGHT_INI = of_import(None, 'WEIGHT_INI', self.country)
-        
+
         
         if fname[-4:] == '.csv':
-            with open(fname) as survey_data_file:
-                self.table = read_csv(survey_data_file)
+            if self.num_table == 1 : 
+                with open(fname) as survey_data_file:
+                    self.table = read_csv(survey_data_file)
+            else : 
+                raise Exception('For now, use three csv table is not allowed'
+                                'although there is no major difficulty. Please,'
+                                'feel free to code it')        
 
         elif fname[-3:] == '.h5':
+            deb1 = time.clock()
             store = HDFStore(fname)
-            available_years = sorted([int(x[-4:]) for x in  store.keys()])
-            
+            available_years = (sorted([int(x[-8:-4]) for x in  store.keys()]))
+            # note we have a repetition here in available_years but it doesn't matter
+            print time.clock() - deb1   
             if year is None:
                 if self.datesim is not None:
                     year_ds  = self.datesim.year
@@ -170,27 +158,33 @@ class DataTable(object):
 
             if yr in available_years:
                 self.survey_year = yr
-            self.table = store[str(base_name)] # only valid for frame 
+            for ent in list_entities:
+                deb1 = time.clock()
+                self.table3[ent] = store[str(base_name)+'/'+ ent]  
+                print time.clock() - deb1        
             store.close()
             
-        self._nrows = self.table.shape[0]
+        self._nrows = self.table3['ind'].shape[0]
         missing_col = []
-        for col in self.description.columns.itervalues():
-            if not col.name in self.table:
-                missing_col.append(col.name)
-                self.table[col.name] = col._default
-            try:   
-                self.table[col.name] = self.table[col.name].astype(col._dtype)
-            except:
-                raise Exception("Impossible de lire la variable suivante issue des données d'enquête :\n %s \n  " %col.name)
+
+        var_entity ={}
+        for ent in list_entities:
+            var_entity[ent] = [x for x in self.description.columns.itervalues() if x.entity == ent]
+            for col in var_entity[ent]:
+                if not col.name in self.table3[ent]:
+                    missing_col.append(col.name)
+                    self.table3[ent][col.name] = col._default
+                try:   
+                    self.table3[ent][col.name] = self.table3[ent][col.name].astype(col._dtype)
+                except:
+                    raise Exception("Impossible de lire la variable suivante issue des données d'enquête :\n %s \n  " %col.name) 
             
         if missing_col:
-            message = "%i input variables missing\n" % len(missing_col)        
+            message = "%i input variables missing\n" % len(missing_col)
             messagef = ""
             messageb = ""
             missing_col.sort()
             for var in missing_col:
-
                 if var[0] == 'f':
                     messagef += '  - '+ var +'\n'
                 elif var[0] == 'b':
@@ -198,6 +192,8 @@ class DataTable(object):
                 else:
                     message += '  - '+ var +'\n'
             print Warning(message + messagef + messageb)
+        
+        
 
         for var in INDEX:
             if ('id' + var) in missing_col:
@@ -209,9 +205,9 @@ class DataTable(object):
         
         self.gen_index(INDEX)
         self._isPopulated = True
-        
         # Initialize default weights
         self.set_value(WEIGHT_INI, self.get_value(WEIGHT), 'ind')
+
         
 #        # TODO: activate for debug
 #        print self.table.get_dtype_counts()
@@ -223,7 +219,7 @@ class DataTable(object):
 #        
 #        print self.table.get_dtype_counts()
 
-    def get_value(self, varname, entity = None, opt = None, sum_ = False):
+    def get_value(self, varname, opt = None, sum_ = False):
         '''
         Read the value in an array
         
@@ -244,59 +240,35 @@ class DataTable(object):
         col = self.description.get_col(varname)
         dflt = col._default
         dtyp = col._dtype
-        var = np.array(self.table[varname].values, dtype = col._dtype)
-        
-        if entity is None:
-            entity = "ind"
-        
-        if entity =="ind":
-            return var
-        nb = self.index[entity]['nb']
-        if opt is None:
-            temp = np.ones(nb, dtype = dtyp)*dflt
-            idx = self.index[entity][0]
-            temp[idx['idxUnit']] = var[idx['idxIndi']]
-            return temp
-        else:
-            out = {}
-            for person in opt:
-                temp = np.ones(nb, dtype = dtyp)*dflt
-                idx = self.index[entity][person]
-                temp[idx['idxUnit']] = var[idx['idxIndi']]
-                out[person] = temp
-            if sum_ is False:
-                return out
-            else:
-                sumout = 0
-                for val in out.itervalues():
-                    sumout += val
-                return sumout
+        entity = col.entity
 
-    def set_value(self, varname, value, entity = None, opt = None):
+        var = np.array(self.table3[col.entity][varname].values, dtype = col._dtype)
+        
+        return var
+    
+    
+
+    def set_value(self, varname, value, entity, opt=None):
         '''
         Sets the value of varname using index and opt
         '''
         if entity is None:
             entity = "ind"
-
-        if opt is None:
-            idx = self.index[entity][0]
-        else:
-            idx = self.index[entity][opt]
-
-        # this command should work on later pandas version...
-#        self.table.ix[idx['idxIndi'], [varname]] = value
-        # for now, we're doing it manually
+            
         col = self.description.get_col(varname)
-        values = self.table[varname].values
-        
+#        values = self.table3[col.entity][varname].values
         dtyp = col._dtype
         temp = np.array(value, dtype = dtyp)
-        var = np.array(values, dtype = dtyp)
-        var[idx['idxIndi']] =  temp[idx['idxUnit']]
-        self.table[varname] = var
+#        var = np.array(values, dtype = dtyp)
+        if opt is None:
+            idx = self.index[entity][0]['idxIndi']
+        else:
+            idx = self.index[entity][opt]['idxIndi']
+        idx = np.atleast_1d(idx)
+        self.table3[col.entity][varname][idx] = value
 
     def to_csv(self, fname):
+        # TODO: 
         self.table.to_csv(fname)
                   
     def __str__(self):
@@ -306,9 +278,9 @@ class DataTable(object):
         self.table[varname] = inflator*self.table[varname]
 
 
-class SystemSf(DataTable):
+class SystemSf3(DataTable3):
     def __init__(self, model_description, param, defaultParam = None, datesim = None, country = None):
-        DataTable.__init__(self, model_description, datesim = datesim, country = country)
+        DataTable3.__init__(self, model_description, datesim = datesim, country = country)
         self._primitives = set()
         self._param = param
         self._default_param = defaultParam
@@ -369,7 +341,7 @@ class SystemSf(DataTable):
         country: str, default None
                  The country of the simulation. this information is used to preprocess the inputs                
         """
-        if not isinstance(inputs, DataTable):
+        if not isinstance(inputs, DataTable3):
             raise TypeError('inputs must be a DataTable')
         # check if all primitives are provided by the inputs
 #        for prim in self._primitives:
@@ -388,7 +360,7 @@ class SystemSf(DataTable):
             dtyp = col._dtype
             dct[col.name] = np.ones(self._nrows, dtyp)*dflt
         
-        self.table = DataFrame(dct)
+        self.table3 = DataFrame(dct)
         
         # Preprocess the input data according to country specification
         if country is None:

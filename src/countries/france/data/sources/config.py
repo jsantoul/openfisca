@@ -9,4 +9,4 @@
 # This file should be (re)named config.py after setting the proprer
 # path of the data directory
 
-DATA_DIR = 'C:/Users/Username/Documents/Data/'
+DATA_DIR = 'T:/data'

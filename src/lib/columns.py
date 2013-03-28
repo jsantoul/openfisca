@@ -75,10 +75,10 @@ class FloatCol(Column):
     '''
     A column of float 32
     '''
-    def __init__(self, label = None, default = 0, start = None, end = None, val_type = None):
+    def __init__(self, label = None, default = 0, entity= 'ind', start = None, end = None, val_type = None):
         super(FloatCol, self).__init__(label, default)
         self._dtype = np.float32
-#        self.entity = entity
+        self.entity = entity
         self.start = start
         self.end = end
         self.val_type = val_type

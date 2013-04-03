@@ -12,6 +12,7 @@ from src.lib.simulation import SurveySimulation
 from src.plugins.survey.aggregates import Aggregates
 from pandas import ExcelWriter, ExcelFile
 import os
+import pandas.rpy.common as com
 
 country = 'france'
 destination_dir = "c:/users/utilisateur/documents/"
@@ -32,7 +33,9 @@ def get_loyer_inflator(year):
 def build_aggregates():
 
     writer = None
-    years = range(2006,2007)
+    years = range(2006,2010)
+    tot1 = 0 
+    tot3 = 0
     for year in years:        
         yr = str(year)
 #        fname = "Agg_%s.%s" %(str(yr), "xls")
@@ -42,15 +45,22 @@ def build_aggregates():
         import time
         deb3 = time.clock()
         simu.set_survey(num_table=3)
-        simu.compute()
+#        simu.compute()
         fin3  = time.clock()
         
+
         print "fin3"
-        
-#        deb1 = time.clock()
+#        for ent in ['ind','men','foy','fam']:
+#            dir_name = 'T:/Myliam2/output OF/' + ent +'.csv'
+#            simu.survey.table3[ent].to_csv(dir_name)
+#            com.convert_to_r_dataframe
+#        dir_name = 'T:/Myliam2/output OF/' + 'output' +'.csv'
+#        simu.outputs.table3.to_csv(dir_name)
+
+        deb1 = time.clock()
         simu.set_survey(num_table=1)
 #        simu.compute()
-#        fin1  = time.clock()        
+        fin1  = time.clock()        
         
 #        agg = Aggregates()
 #        agg.set_simulation(simu)
@@ -63,8 +73,11 @@ def build_aggregates():
 #        del agg
         import gc
         gc.collect()
-#    print fin1 - deb1
-    print fin3 - deb3
+        tot1 += fin1 - deb1
+        tot3 += fin3 - deb3
+        print fin1 - deb1
+        print fin3 - deb3
+    print tot1, tot3, tot3- tot1
 #    writer.save()
 
 

@@ -178,7 +178,9 @@ class DataTable3(object):
                     self.table3[ent][col.name] = self.table3[ent][col.name].astype(col._dtype)
                 except:
                     raise Exception("Impossible de lire la variable suivante issue des données d'enquête :\n %s \n  " %col.name) 
-            
+        if ent == 'foy':
+            self.table3[ent] = self.table3[ent].to_sparse(fill_value=0)   
+                      
         if missing_col:
             message = "%i input variables missing\n" % len(missing_col)
             messagef = ""
@@ -242,13 +244,12 @@ class DataTable3(object):
         dtyp = col._dtype
         entity = col.entity
 
-        var = np.array(self.table3[col.entity][varname].values, dtype = col._dtype)
-        
+        var = np.array(self.table3[col.entity][varname].values, dtype = col._dtype)     
         return var
     
     
 
-    def set_value(self, varname, value, entity, opt=None):
+    def set_value(self, varname, value, entity = None, opt=None):
         '''
         Sets the value of varname using index and opt
         '''
@@ -354,13 +355,20 @@ class SystemSf3(DataTable3):
         self._nrows = inputs._nrows
 
         # initialize the pandas DataFrame to store data
-        dct = {}
+        self.table3 = {'ind' : DataFrame(), 'foy' : DataFrame(), 
+                       'men' : DataFrame(), 'fam' : DataFrame()  } 
+        
+        dct = {'ind' : {}, 'foy' : {}, 'men' : {}, 'fam' : {} } 
         for col in self.description.columns.itervalues():
             dflt = col._default
             dtyp = col._dtype
-            dct[col.name] = np.ones(self._nrows, dtyp)*dflt
+            dent = col.entity
+            dct[dent][col.name] = np.ones(self._nrows, dtyp)*dflt
         
-        self.table3 = DataFrame(dct)
+        print self.list_entities              
+        for ent in self.list_entities:
+            self.table3[ent] = DataFrame(dct[ent]) 
+
         
         # Preprocess the input data according to country specification
         if country is None:
@@ -403,18 +411,18 @@ class SystemSf3(DataTable3):
         
 #        idx = self.index[col._entity]
 
-        idx = col._entity
-        if idx is None:
-            idx = "ind"
+        ent = col._entity
+        if ent is None:
+            ent = "ind"
 
         required = set(col.inputs)
         funcArgs = {}
         for var in required:
             if var in self._inputs.col_names:
                 if var in col._option: 
-                    funcArgs[var] = self._inputs.get_value(var, idx, col._option[var])
+                    funcArgs[var] = self._inputs.get_value(var, col._option[var])
                 else:
-                    funcArgs[var] = self._inputs.get_value(var, idx)
+                    funcArgs[var] = self._inputs.get_value(var)
         
         for var in col._parents:
             parentname = var.name
@@ -422,9 +430,9 @@ class SystemSf3(DataTable3):
                 raise Exception('%s provided twice: %s was found in primitives and in parents' %  (varname, varname))
             self.calculate(parentname)
             if parentname in col._option:
-                funcArgs[parentname] = self.get_value(parentname, idx, col._option[parentname])
+                funcArgs[parentname] = self.get_value(parentname, col._option[parentname])
             else:
-                funcArgs[parentname] = self.get_value(parentname, idx)
+                funcArgs[parentname] = self.get_value(parentname)
         
         if col._needParam:
             funcArgs['_P'] = self._param
@@ -433,9 +441,8 @@ class SystemSf3(DataTable3):
         if col._needDefaultParam:
             funcArgs['_defaultP'] = self._default_param
             required.add('_defaultP')
-        
         provided = set(funcArgs.keys())        
         if provided != required:
             raise Exception('%s missing: %s needs %s but only %s were provided' % (str(list(required - provided)), self._name, str(list(required)), str(list(provided))))
-        self.set_value(varname, col._func(**funcArgs), idx)
+        self.set_value(varname, col._func(**funcArgs), ent)
         col._isCalculated = True

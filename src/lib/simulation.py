@@ -137,7 +137,7 @@ class Simulation(object):
         """
         P_default = self.P_default     
         P         = self.P          
-        if input_table.num_table == 1:    
+        if self.num_table == 1:    
             output = SystemSf(self.ModelSF, P, P_default, datesim = self.datesim, country = self.country)
             output.set_inputs(input_table, country = self.country)
                                 
@@ -146,7 +146,7 @@ class Simulation(object):
                 output_default.set_inputs(input_table, country = self.country)
             else:
                 output_default = output
-        elif input_table.num_table == 3:    
+        elif self.num_table == 3:    
             output = SystemSf3(self.ModelSF, P, P_default, datesim = self.datesim, country = self.country)
             output.set_inputs(input_table, country = self.country)
                                 

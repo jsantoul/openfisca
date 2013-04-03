@@ -244,8 +244,7 @@ class DataTable3(object):
         dtyp = col._dtype
         entity = col.entity
 
-        var = np.array(self.table3[col.entity][varname].values, dtype = col._dtype)   
-        pdb.set_trace()     
+        var = np.array(self.table3[col.entity][varname].values, dtype = col._dtype)     
         return var
     
     

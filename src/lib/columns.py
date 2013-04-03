@@ -123,6 +123,7 @@ class Prestation(Column):
         self._start = start
         self._end = end
         self._val_type = val_type
+        self.entity  = entity
         
         self.inputs = set(func.__code__.co_varnames[:func.__code__.co_argcount])
         self._children  = set() # prestations immidiately affected by current prestation 

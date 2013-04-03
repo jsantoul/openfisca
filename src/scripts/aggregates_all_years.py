@@ -12,6 +12,7 @@ from src.lib.simulation import SurveySimulation
 from src.plugins.survey.aggregates import Aggregates
 from pandas import ExcelWriter, ExcelFile
 import os
+import pandas.rpy.common as com
 
 country = 'france'
 destination_dir = "c:/users/utilisateur/documents/"
@@ -45,10 +46,16 @@ def build_aggregates():
         simu.compute()
         fin3  = time.clock()
         
+
         print "fin3"
-        
+#        for ent in ['ind','men','foy','fam']:
+#            dir_name = 'T:/Myliam2/output OF/' + ent +'.csv'
+#            simu.survey.table3[ent].to_csv(dir_name)
+#            com.convert_to_r_dataframe
+#        dir_name = 'T:/Myliam2/output OF/' + 'output' +'.csv'
+#        simu.outputs.table3.to_csv(dir_name)
 #        deb1 = time.clock()
-        simu.set_survey(num_table=1)
+#        simu.set_survey(num_table=1)
 #        simu.compute()
 #        fin1  = time.clock()        
         

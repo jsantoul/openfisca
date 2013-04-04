@@ -221,7 +221,7 @@ class DataTable3(object):
 #        
 #        print self.table.get_dtype_counts()
 
-    def get_value(self, varname, opt = None, sum_ = False):
+    def get_value(self, varname, entity=None, opt = None, sum_ = False):
         '''
         Read the value in an array
         
@@ -242,9 +242,29 @@ class DataTable3(object):
         col = self.description.get_col(varname)
         dflt = col._default
         dtyp = col._dtype
-        entity = col.entity
-
-        var = np.array(self.table3[col.entity][varname].values, dtype = col._dtype)     
+        entity_dest = col.entity
+        
+        
+        var = np.array(self.table3[entity_dest][varname].values, dtype = col._dtype)
+        
+        if opt is not None and entity is None : 
+            raise Exception("Entity must be given when opt is given")
+        
+        if opt is not None:
+            out = {}
+            nb = self.index[entity]['nb']
+            for person in opt:
+                temp = np.ones(nb, dtype = dtyp)*dflt
+                idx = self.index[entity][person]
+                temp[idx['idxUnit']] = var[idx['idxIndi']]
+                out[person] = temp
+            if sum_ is False:
+                return out
+            else:
+                sumout = 0
+                for val in out.itervalues():
+                    sumout += val
+                return sumout           
         return var
     
     
@@ -262,12 +282,18 @@ class DataTable3(object):
         temp = np.array(value, dtype = dtyp)
 #        var = np.array(values, dtype = dtyp)
         if opt is None:
-            idx = self.index[entity][0]['idxIndi']
+            idx = self.index[entity][0]
         else:
-            idx = self.index[entity][opt]['idxIndi']
-        idx = np.atleast_1d(idx)
-        self.table3[col.entity][varname][idx] = value
+            idx = self.index[entity][opt]
+        print col.entity,varname, idx, opt
+        
+        
 
+        if entity=='ind' : 
+            self.table3[entity].ix[idx['idxIndi'], [varname]] = value
+        else:
+            self.table3[entity].ix[idx['idxUnit'], [varname]] = value
+            
     def to_csv(self, fname):
         # TODO: 
         self.table.to_csv(fname)
@@ -363,9 +389,11 @@ class SystemSf3(DataTable3):
             dflt = col._default
             dtyp = col._dtype
             dent = col.entity
-            dct[dent][col.name] = np.ones(self._nrows, dtyp)*dflt
+            size = self.index[dent]['nb']
+            dct[dent][col.name] = np.ones(size, dtyp)*dflt
         
-        print self.list_entities              
+        print self.list_entities   
+#        pdb.set_trace()           
         for ent in self.list_entities:
             self.table3[ent] = DataFrame(dct[ent]) 
 
@@ -391,11 +419,11 @@ class SystemSf3(DataTable3):
         '''
         if varname is None:
             for col in self.description.columns.itervalues():
-                try:
+#                try:
                     self.calculate(col.name)
-                except Exception as e:
-                    print e
-                    print col.name
+#                except Exception as e:
+#                    print e
+#                    print col.name
             return # Will calculate all and exit
 
         col = self.description.get_col(varname)
@@ -420,17 +448,20 @@ class SystemSf3(DataTable3):
         for var in required:
             if var in self._inputs.col_names:
                 if var in col._option: 
-                    funcArgs[var] = self._inputs.get_value(var, col._option[var])
+                    funcArgs[var] = self._inputs.get_value(var, ent, col._option[var])
                 else:
                     funcArgs[var] = self._inputs.get_value(var)
-        
+        if varname == 'rev_cap_bar':
+            pdb.set_trace()
         for var in col._parents:
             parentname = var.name
             if parentname in funcArgs:
                 raise Exception('%s provided twice: %s was found in primitives and in parents' %  (varname, varname))
             self.calculate(parentname)
+#            if varname == 'af_nbenf':
+#                pdb.set_trace()
             if parentname in col._option:
-                funcArgs[parentname] = self.get_value(parentname, col._option[parentname])
+                funcArgs[parentname] = self.get_value(parentname, ent, col._option[parentname])
             else:
                 funcArgs[parentname] = self.get_value(parentname)
         

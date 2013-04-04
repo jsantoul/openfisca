@@ -33,7 +33,7 @@ def get_loyer_inflator(year):
 def build_aggregates():
 
     writer = None
-    years = range(2006,2010)
+    years = range(2006,2007)
     tot1 = 0 
     tot3 = 0
     for year in years:        
@@ -43,9 +43,17 @@ def build_aggregates():
         simu.set_config(year = yr, country = country)
         simu.set_param()
         import time
+        
+        
+        
+        
         deb3 = time.clock()
+        
+        
+        
+        
         simu.set_survey(num_table=3)
-#        simu.compute()
+        simu.compute()
         fin3  = time.clock()
         
 
@@ -59,7 +67,7 @@ def build_aggregates():
 
         deb1 = time.clock()
         simu.set_survey(num_table=1)
-#        simu.compute()
+        simu.compute()
         fin1  = time.clock()        
         
 #        agg = Aggregates()

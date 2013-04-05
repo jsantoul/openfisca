@@ -33,7 +33,7 @@ def get_loyer_inflator(year):
 def build_aggregates():
 
     writer = None
-    years = range(2006,2010)
+    years = range(2006,2007)
     tot1 = 0 
     tot3 = 0
     for year in years:        
@@ -45,7 +45,7 @@ def build_aggregates():
         import time
         deb3 = time.clock()
         simu.set_survey(num_table=3)
-#        simu.compute()
+        simu.compute()
         fin3  = time.clock()
         
 
@@ -59,7 +59,7 @@ def build_aggregates():
 
         deb1 = time.clock()
         simu.set_survey(num_table=1)
-#        simu.compute()
+        simu.compute()
         fin1  = time.clock()        
         
 #        agg = Aggregates()
@@ -75,8 +75,8 @@ def build_aggregates():
         gc.collect()
         tot1 += fin1 - deb1
         tot3 += fin3 - deb3
-        print fin1 - deb1
-        print fin3 - deb3
+        print "Time to process 1 table :" +str(fin1 - deb1)
+        print "Time to process 3 table :" +str(fin3 - deb3)
     print tot1, tot3, tot3- tot1
 #    writer.save()
 

@@ -43,20 +43,25 @@ def build_aggregates():
         simu.set_config(year = yr, country = country)
         simu.set_param()
         import time
+        
+        
         deb3 = time.clock()
         simu.set_survey(num_table=3)
         simu.compute()
         fin3  = time.clock()
         
 
-        print "fin3"
 #        for ent in ['ind','men','foy','fam']:
-#            dir_name = 'T:/Myliam2/output OF/' + ent +'.csv'
-#            simu.survey.table3[ent].to_csv(dir_name)
-#            com.convert_to_r_dataframe
-#        dir_name = 'T:/Myliam2/output OF/' + 'output' +'.csv'
-#        simu.outputs.table3.to_csv(dir_name)
+##            dir_name = 'T:/Myliam2/output OF/' + ent +'.csv'
+##            simu.survey.table3[ent].to_csv(dir_name)
+#            import pdb
+#            pdb.set_trace()
+##            com.convert_to_r_dataframe
+#            
+#            dir_name = 'T:/Myliam2/output OF/' + 'output_'  + ent +'.csv'
+#            simu.outputs.table3[ent].to_csv(dir_name)
 
+        
         deb1 = time.clock()
         simu.set_survey(num_table=1)
         simu.compute()

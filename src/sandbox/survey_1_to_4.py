@@ -52,7 +52,7 @@ for year in  ['2006']:  # available_years:
         print entity, vars_entity
         if entity == 'foy':   
             enum = 'qui'+entity
-            table_entity = table_in_one.ix[table_in_one[enum] < 2 ,['noi','idmen','idfoy','idfam'] + vars_entity]
+            table_entity = table_in_one.ix[table_in_one[enum] ==0 ,['noi','idmen','idfoy','idfam'] + vars_entity]
         elif entity == 'men':   
             enum = 'qui'+entity
             table_entity = table_in_one.ix[table_in_one[enum] == 0 ,['noi','idmen','idfoy','idfam'] + vars_entity]

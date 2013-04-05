@@ -93,6 +93,8 @@ class DataTable3(object):
             dct = self.index[entity]
             idxlist = np.unique(idx)
             dct['nb'] = len(idxlist)
+            
+            self.index['ind'][entity] = np.searchsorted(idxlist, idx)
 
             for full, person in enum:
                 idxIndi = np.sort(np.squeeze((np.argwhere(qui == person))))
@@ -208,7 +210,7 @@ class DataTable3(object):
         self.gen_index(INDEX)
         self._isPopulated = True
         # Initialize default weights
-        self.set_value(WEIGHT_INI, self.get_value(WEIGHT), 'ind')
+
 
         
 #        # TODO: activate for debug
@@ -221,18 +223,21 @@ class DataTable3(object):
 #        
 #        print self.table.get_dtype_counts()
 
-    def get_value(self, varname, opt = None, sum_ = False):
+    def get_value(self, varname, entity=None, opt = None, sum_ = False):
         '''
         Read the value in an array
         
         Parameters
         ----------
         entity : str, default None
-                 if "ind" or None return every individual, else return individuals belongig to the entity
+                 if "ind" or None return every individual, else return individuals belonging to the entity
+                 if entity not the natural value for varname, sum over all members of entity
+            Note that entity has not the same role if opt is or is not None. 
+                 
         opt : dict
              dict with the id of the person for which you want the value
             - if opt is None, returns the value for the person 0 (i.e. 'vous' for 'foy', 'chef' for 'fam', 'pref' for 'men' in the "france" case)
-            - if opt is not None, return a dict with key 'person' and values for this person
+            - if opt is not None, return a dict with key 'person' and values for this person in each entity
         
         Returns
         -------
@@ -242,9 +247,72 @@ class DataTable3(object):
         col = self.description.get_col(varname)
         dflt = col._default
         dtyp = col._dtype
-        entity = col.entity
-
-        var = np.array(self.table3[col.entity][varname].values, dtype = col._dtype)     
+        dent = col.entity
+        
+        
+        var = np.array(self.table3[dent][varname].values, dtype = col._dtype)
+        
+        if opt is not None and entity is None : 
+            raise Exception("Entity must be given when opt is given")
+        
+        if entity is not None and opt is None:
+            if (entity=='ind' and dent is not 'ind') or \
+              (entity=='foy' and dent not in ('ind','foy')) or \
+              (entity=='fam' and dent not in ('ind','foy','fam')):
+                mode = 'expand'
+#                raise Exception('Mind that to aggregate an entity value to'
+#                             'an other entity, the following order apply'
+#                             ' ind <= foy <= fam <= men ')  
+            else: 
+                mode = 'aggr'
+ 
+        
+        if entity is None:
+            entity = col.entity
+                               
+            
+        if opt is None:
+            nb = self.index[entity]['nb']
+            if col.entity == entity: 
+                return var
+            else: 
+                temp = np.ones(nb, dtype = dtyp)*dflt
+                if mode == 'aggr':               
+                    for person in range(0,10):                        
+                        if col.entity is 'ind':
+                            idx = self.index[entity][person]
+                            temp[idx['idxUnit']] += var[idx['idxIndi']]
+                        else:
+                            idx = self.index[dent][person]
+                            indiv = idx['idxIndi']  
+                            idx_to = self.index['ind'][entity][indiv] 
+                            temp[idx['idxUnit']] += var[idx['idxIndi']]
+                    return temp
+                                       
+                elif mode == 'expand': 
+                    idx = self.index[dent][0]
+                    indiv = idx['idxIndi']
+                    if entity is not 'ind':
+                        idx_to = self.index['ind'][entity][indiv]                            
+                    else: 
+                        idx_to = indiv
+                    temp[idx_to] = var
+                    return temp
+        else:            
+            out = {}
+            nb = self.index[entity]['nb']
+            for person in opt:
+                temp = np.ones(nb, dtype = dtyp)*dflt
+                idx = self.index[entity][person]
+                temp[idx['idxUnit']] = var[idx['idxIndi']]
+                out[person] = temp             
+            if sum_ is False:
+                return out
+            else:
+                sumout = 0
+                for val in out.itervalues():
+                    sumout += val
+                return sumout           
         return var
     
     
@@ -262,12 +330,16 @@ class DataTable3(object):
         temp = np.array(value, dtype = dtyp)
 #        var = np.array(values, dtype = dtyp)
         if opt is None:
-            idx = self.index[entity][0]['idxIndi']
+            idx = self.index[entity][0]
         else:
-            idx = self.index[entity][opt]['idxIndi']
-        idx = np.atleast_1d(idx)
-        self.table3[col.entity][varname][idx] = value
+            idx = self.index[entity][opt]      
+        
 
+        if entity=='ind' : 
+            self.table3[entity].ix[idx['idxIndi'], [varname]] = value
+        else:
+            self.table3[entity].ix[idx['idxUnit'], [varname]] = value
+            
     def to_csv(self, fname):
         # TODO: 
         self.table.to_csv(fname)
@@ -363,9 +435,9 @@ class SystemSf3(DataTable3):
             dflt = col._default
             dtyp = col._dtype
             dent = col.entity
-            dct[dent][col.name] = np.ones(self._nrows, dtyp)*dflt
-        
-        print self.list_entities              
+            size = self.index[dent]['nb']
+            dct[dent][col.name] = np.ones(size, dtyp)*dflt
+               
         for ent in self.list_entities:
             self.table3[ent] = DataFrame(dct[ent]) 
 
@@ -397,9 +469,9 @@ class SystemSf3(DataTable3):
                     print e
                     print col.name
             return # Will calculate all and exit
-
+        
         col = self.description.get_col(varname)
-
+        
         if not self._primitives <= self._inputs.col_names:
             raise Exception('%s are not set, use set_inputs before calling calculate. Primitives needed: %s, Inputs: %s' % (self._primitives - self._inputs.col_names, self._primitives, self._inputs.col_names))
 
@@ -420,19 +492,18 @@ class SystemSf3(DataTable3):
         for var in required:
             if var in self._inputs.col_names:
                 if var in col._option: 
-                    funcArgs[var] = self._inputs.get_value(var, col._option[var])
+                    funcArgs[var] = self._inputs.get_value(var, ent, col._option[var])
                 else:
-                    funcArgs[var] = self._inputs.get_value(var)
-        
+                    funcArgs[var] = self._inputs.get_value(var,ent)
         for var in col._parents:
             parentname = var.name
             if parentname in funcArgs:
                 raise Exception('%s provided twice: %s was found in primitives and in parents' %  (varname, varname))
             self.calculate(parentname)
             if parentname in col._option:
-                funcArgs[parentname] = self.get_value(parentname, col._option[parentname])
+                funcArgs[parentname] = self.get_value(parentname, ent, col._option[parentname])
             else:
-                funcArgs[parentname] = self.get_value(parentname)
+                funcArgs[parentname] = self.get_value(parentname, ent)
         
         if col._needParam:
             funcArgs['_P'] = self._param
@@ -444,5 +515,6 @@ class SystemSf3(DataTable3):
         provided = set(funcArgs.keys())        
         if provided != required:
             raise Exception('%s missing: %s needs %s but only %s were provided' % (str(list(required - provided)), self._name, str(list(required)), str(list(provided))))
+        print varname
         self.set_value(varname, col._func(**funcArgs), ent)
         col._isCalculated = True

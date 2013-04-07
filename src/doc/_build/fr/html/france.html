@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="openfisca TODO documentation" href="index.html" />
-    <link rel="next" title="Participer au développement d’OpenFisca" href="contributing.html" />
+    <link rel="next" title="Usages" href="users.html" />
     <link rel="prev" title="Microsimulation à partir de données d’enquête" href="survey.html" /> 
   </head>
   <body>
@@ -37,7 +37,7 @@
         <div class="rel">
           <a href="survey.html" title="Microsimulation à partir de données d’enquête"
              accesskey="P">previous</a> |
-          <a href="contributing.html" title="Participer au développement d’OpenFisca"
+          <a href="users.html" title="Usages"
              accesskey="N">next</a> |
           <a href="np-modindex.html" title="Python Module Index"
              >modules</a> |
@@ -59,10 +59,62 @@
             
   <div class="section" id="france">
 <span id="id1"></span><h1>France<a class="headerlink" href="#france" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="parametres-generaux">
+<h2>Paramètres généraux<a class="headerlink" href="#parametres-generaux" title="Permalink to this headline">¶</a></h2>
 <p>Les entités du modèle socio-fiscal français sont l&#8217;individu, le foyer fiscal, la famille (le foyer social) et
 le ménage.</p>
-<p>Le modèle socio-fiscal français est décrit dans le paquet (package) france.
-Les variables nécessaires au calcul de l&#8217;ensemble des prestations, ainsi que les entitées auxquelles elles
+<p>Le modèle socio-fiscal français est décrit dans le paquet <tt class="xref py py-mod docutils literal"><span class="pre">src.countries.france</span></tt>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="c"># This file is part of OpenFisca</span>
+<span class="c"># Copyright © 2012 Mahdi Ben Jelloul, Clément Schaff </span>
+<span class="c"># Licensed under the terms of the GPL License v3 or later version</span>
+<span class="c"># (see src/__init__.py for details)</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">src</span> <span class="kn">import</span> <span class="n">SRC_PATH</span>
+
+<span class="c">## France </span>
+
+<span class="c"># Model parameters</span>
+<span class="n">ENTITIES_INDEX</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;men&#39;</span><span class="p">,</span> <span class="s">&#39;fam&#39;</span><span class="p">,</span> <span class="s">&#39;foy&#39;</span><span class="p">]</span>
+
+
+<span class="c"># Data</span>
+<span class="n">WEIGHT</span> <span class="o">=</span> <span class="s">&quot;wprm&quot;</span>
+<span class="n">WEIGHT_INI</span> <span class="o">=</span> <span class="s">&quot;wprm_init&quot;</span>
+
+<span class="n">DATA_SOURCES_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SRC_PATH</span><span class="p">,</span><span class="s">&quot;countries&quot;</span><span class="p">,</span><span class="s">&quot;france&quot;</span><span class="p">,</span><span class="s">&quot;data&quot;</span><span class="p">,</span><span class="s">&quot;sources&quot;</span><span class="p">)</span>
+
+<span class="c"># Some variables needed by the test case plugins</span>
+
+<span class="n">CURRENCY</span> <span class="o">=</span> <span class="s">u&quot;€&quot;</span>
+
+<span class="n">REVENUES_CATEGORIES</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;superbrut&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="s">&#39;salsuperbrut&#39;</span><span class="p">,</span> <span class="s">&#39;chobrut&#39;</span><span class="p">,</span> <span class="s">&#39;rstbrut&#39;</span><span class="p">,</span> <span class="s">&#39;alr&#39;</span><span class="p">,</span> <span class="s">&#39;alv&#39;</span><span class="p">,</span>
+                       <span class="s">&#39;rev_cap_brut&#39;</span><span class="p">,</span> <span class="s">&#39;fon&#39;</span><span class="p">],</span>
+       <span class="s">&#39;brut&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;salbrut&#39;</span><span class="p">,</span> <span class="s">&#39;chobrut&#39;</span><span class="p">,</span> <span class="s">&#39;rstbrut&#39;</span><span class="p">,</span> <span class="s">&#39;alr&#39;</span><span class="p">,</span> <span class="s">&#39;alv&#39;</span><span class="p">,</span>
+                 <span class="s">&#39;rev_cap_brut&#39;</span><span class="p">,</span> <span class="s">&#39;fon&#39;</span><span class="p">],</span>
+       <span class="s">&#39;imposable&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="s">&#39;sal&#39;</span><span class="p">,</span> <span class="s">&#39;cho&#39;</span><span class="p">,</span> <span class="s">&#39;rst&#39;</span><span class="p">,</span> <span class="s">&#39;alr&#39;</span><span class="p">,</span> <span class="s">&#39;alv&#39;</span><span class="p">,</span> <span class="s">&#39;rev_cap_brut&#39;</span><span class="p">,</span> <span class="s">&#39;fon&#39;</span><span class="p">,</span> <span class="s">&#39;cotsoc_cap&#39;</span><span class="p">],</span>
+       <span class="s">&#39;net&#39;</span>      <span class="p">:</span> <span class="p">[</span><span class="s">&#39;salnet&#39;</span><span class="p">,</span> <span class="s">&#39;chonet&#39;</span><span class="p">,</span> <span class="s">&#39;rstnet&#39;</span><span class="p">,</span> <span class="s">&#39;alr&#39;</span><span class="p">,</span> <span class="s">&#39;alv&#39;</span><span class="p">,</span> <span class="s">&#39;rev_cap_net&#39;</span><span class="p">,</span> <span class="s">&#39;fon&#39;</span><span class="p">,</span>
+                      <span class="p">]}</span>        
+
+
+<span class="c"># Some variables used by other plugins</span>
+
+<span class="n">AGGREGATES_DEFAULT_VARS</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;cotsoc_noncontrib&#39;</span><span class="p">,</span> <span class="s">&#39;csg&#39;</span><span class="p">,</span> <span class="s">&#39;crds&#39;</span><span class="p">,</span>
+            <span class="s">&#39;irpp&#39;</span><span class="p">,</span> <span class="s">&#39;ppe&#39;</span><span class="p">,</span>
+            <span class="s">&#39;af&#39;</span><span class="p">,</span> <span class="s">&#39;af_base&#39;</span><span class="p">,</span> <span class="s">&#39;af_majo&#39;</span><span class="p">,</span><span class="s">&#39;af_forf&#39;</span><span class="p">,</span> <span class="s">&#39;cf&#39;</span><span class="p">,</span>
+            <span class="s">&#39;paje_base&#39;</span><span class="p">,</span> <span class="s">&#39;paje_nais&#39;</span><span class="p">,</span> <span class="s">&#39;paje_colca&#39;</span><span class="p">,</span> <span class="s">&#39;paje_clmg&#39;</span><span class="p">,</span>
+            <span class="s">&#39;ars&#39;</span><span class="p">,</span> <span class="s">&#39;aeeh&#39;</span><span class="p">,</span> <span class="s">&#39;asf&#39;</span><span class="p">,</span> <span class="s">&#39;aspa&#39;</span><span class="p">,</span>
+            <span class="s">&#39;aah&#39;</span><span class="p">,</span> <span class="s">&#39;caah&#39;</span><span class="p">,</span> 
+            <span class="s">&#39;rsa&#39;</span><span class="p">,</span> <span class="s">&#39;rsa_act&#39;</span><span class="p">,</span> <span class="s">&#39;aefa&#39;</span><span class="p">,</span> <span class="s">&#39;api&#39;</span><span class="p">,</span>
+            <span class="s">&#39;logt&#39;</span><span class="p">,</span> <span class="s">&#39;alf&#39;</span><span class="p">,</span> <span class="s">&#39;als&#39;</span><span class="p">,</span> <span class="s">&#39;apl&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="description-du-modele-socio-fiscal">
+<h2>Description du modèle socio-fiscal<a class="headerlink" href="#description-du-modele-socio-fiscal" title="Permalink to this headline">¶</a></h2>
+<p>Les variables nécessaires au calcul de l&#8217;ensemble des prestations, ainsi que les entitées auxquelles elles
 se rapportent, sont répertoriées dans la classe suivante:</p>
 <span class="target" id="module-src.countries.france.model.data"></span><dl class="class">
 <dt id="src.countries.france.model.data.InputTable">
@@ -961,9 +1013,10 @@ générée par le  générateur de cas type</p>
 </pre></div>
 </div>
 <p>Les impôts et les prestations disponibles sont rassemblées dans différents modules.</p>
-<div class="section" id="module-src.countries.france.model.cotsoc">
-<span id="les-cotisations-sociales"></span><h2>Les cotisations sociales<a class="headerlink" href="#module-src.countries.france.model.cotsoc" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<div class="section" id="les-cotisations-sociales">
+<h3>Les cotisations sociales<a class="headerlink" href="#les-cotisations-sociales" title="Permalink to this headline">¶</a></h3>
+<p>Les cotisations sociales</p>
+<span class="target" id="module-src.countries.france.model.cotsoc"></span><dl class="function">
 <dt id="src.countries.france.model.cotsoc._alleg_fillon">
 <tt class="descclassname">src.countries.france.model.cotsoc.</tt><tt class="descname">_alleg_fillon</tt><big>(</big><em>salbrut</em>, <em>sal_h_b</em>, <em>type_sal</em>, <em>_P</em><big>)</big><a class="headerlink" href="#src.countries.france.model.cotsoc._alleg_fillon" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allègement de charges patronales sur les bas et moyens salaires
@@ -1209,9 +1262,10 @@ Landais, Piketty, Saez (2011)</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-src.countries.france.model.irpp">
-<span id="l-impot-sur-le-revenu"></span><h2>L&#8217;impôt sur le revenu<a class="headerlink" href="#module-src.countries.france.model.irpp" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<div class="section" id="l-impot-sur-le-revenu">
+<h3>L&#8217;impôt sur le revenu<a class="headerlink" href="#l-impot-sur-le-revenu" title="Permalink to this headline">¶</a></h3>
+<p>L&#8217;IRPP.</p>
+<span class="target" id="module-src.countries.france.model.irpp"></span><dl class="function">
 <dt id="src.countries.france.model.irpp._abat_sal_pen">
 <tt class="descclassname">src.countries.france.model.irpp.</tt><tt class="descname">_abat_sal_pen</tt><big>(</big><em>sal_net</em>, <em>pen_net</em>, <em>_P</em><big>)</big><a class="headerlink" href="#src.countries.france.model.irpp._abat_sal_pen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Abattement de 20% sur les salaires
@@ -1721,6 +1775,7 @@ mncn_pvct (f5ky, f5ly, f5my)</p>
 &#8216;foy&#8217;</p>
 </dd></dl>
 
+<p>Les charges déductibles.</p>
 <span class="target" id="module-src.countries.france.model.irpp_charges_deductibles"></span><dl class="function">
 <dt id="src.countries.france.model.irpp_charges_deductibles._cd1">
 <tt class="descclassname">src.countries.france.model.irpp_charges_deductibles.</tt><tt class="descname">_cd1</tt><big>(</big><em>cd_penali</em>, <em>cd_acc75a</em>, <em>cd_percap</em>, <em>cd_deddiv</em>, <em>cd_doment</em>, <em>cd_eparet</em>, <em>cd_grorep</em>, <em>_P</em><big>)</big><a class="headerlink" href="#src.countries.france.model.irpp_charges_deductibles._cd1" title="Permalink to this definition">¶</a></dt>
@@ -1811,6 +1866,7 @@ complémentaire)
 2002-2006</p>
 </dd></dl>
 
+<p>Les réductions d&#8217;impôts.</p>
 <span class="target" id="module-src.countries.france.model.irpp_reductions_impots"></span><dl class="function">
 <dt id="src.countries.france.model.irpp_reductions_impots._adhcga">
 <tt class="descclassname">src.countries.france.model.irpp_reductions_impots.</tt><tt class="descname">_adhcga</tt><big>(</big><em>f7ff</em>, <em>f7fg</em>, <em>_P</em><big>)</big><a class="headerlink" href="#src.countries.france.model.irpp_reductions_impots._adhcga" title="Permalink to this definition">¶</a></dt>
@@ -2063,6 +2119,7 @@ de fonds d&#8217;investissement de proximité
 2002-</p>
 </dd></dl>
 
+<p>Les crédits d&#8217;impôts</p>
 <span class="target" id="module-src.countries.france.model.irpp_credits_impots"></span><dl class="function">
 <dt id="src.countries.france.model.irpp_credits_impots._accult">
 <tt class="descclassname">src.countries.france.model.irpp_credits_impots.</tt><tt class="descname">_accult</tt><big>(</big><em>f7uo</em>, <em>_P</em><big>)</big><a class="headerlink" href="#src.countries.france.model.irpp_credits_impots._accult" title="Permalink to this definition">¶</a></dt>
@@ -2202,7 +2259,7 @@ TODO check formula and parameters</p>
 
 </div>
 <div class="section" id="module-src.countries.france.model.isf">
-<span id="l-impot-de-solidarite-sur-la-fortune-et-le-bouclier-fiscal"></span><h2>L&#8217;impôt de solidarité sur la fortune et le bouclier fiscal<a class="headerlink" href="#module-src.countries.france.model.isf" title="Permalink to this headline">¶</a></h2>
+<span id="l-impot-de-solidarite-sur-la-fortune-et-le-bouclier-fiscal"></span><h3>L&#8217;impôt de solidarité sur la fortune et le bouclier fiscal<a class="headerlink" href="#module-src.countries.france.model.isf" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="src.countries.france.model.isf._bouclier_rev">
 <tt class="descclassname">src.countries.france.model.isf.</tt><tt class="descname">_bouclier_rev</tt><big>(</big><em>rbg</em>, <em>maj_cga</em>, <em>csg_deduc</em>, <em>rvcm_plus_abat</em>, <em>rev_cap_lib</em>, <em>rev_exo</em>, <em>rev_or</em>, <em>cd_penali</em>, <em>cd_eparet</em><big>)</big><a class="headerlink" href="#src.countries.france.model.isf._bouclier_rev" title="Permalink to this definition">¶</a></dt>
@@ -2286,7 +2343,7 @@ TODO check formula and parameters</p>
 
 </div>
 <div class="section" id="module-src.countries.france.model.mini">
-<span id="les-minimas-sociaux"></span><h2>Les minimas sociaux<a class="headerlink" href="#module-src.countries.france.model.mini" title="Permalink to this headline">¶</a></h2>
+<span id="les-minimas-sociaux"></span><h3>Les minimas sociaux<a class="headerlink" href="#module-src.countries.france.model.mini" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="src.countries.france.model.mini._aah">
 <tt class="descclassname">src.countries.france.model.mini.</tt><tt class="descname">_aah</tt><big>(</big><em>br_pf_i, br_aah, inv, age, smic55, concub, af_nbenf, _P, _option={'smic55': [0, 1], 'inv': [0, 1], 'age': [0, 1], 'br_pf_i': [0, 1]}</em><big>)</big><a class="headerlink" href="#src.countries.france.model.mini._aah" title="Permalink to this definition">¶</a></dt>
@@ -2462,7 +2519,7 @@ personnes ayant épuisé leurs droits à bénéficier de l&#8217;assurance chôm
 
 </div>
 <div class="section" id="module-src.countries.france.model.pfam">
-<span id="les-allocations-familiales"></span><h2>Les allocations familiales<a class="headerlink" href="#module-src.countries.france.model.pfam" title="Permalink to this headline">¶</a></h2>
+<span id="les-allocations-familiales"></span><h3>Les allocations familiales<a class="headerlink" href="#module-src.countries.france.model.pfam" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="src.countries.france.model.pfam._aeeh">
 <tt class="descclassname">src.countries.france.model.pfam.</tt><tt class="descname">_aeeh</tt><big>(</big><em>age, inv, isol, categ_inv, _P, _option={'age': [2, 3, 4, 5, 6, 7, 8, 9, 10], 'inv': [2, 3, 4, 5, 6, 7, 8, 9, 10], 'categ_inv': [2, 3, 4, 5, 6, 7, 8, 9, 10]}</em><big>)</big><a class="headerlink" href="#src.countries.france.model.pfam._aeeh" title="Permalink to this definition">¶</a></dt>
@@ -2705,7 +2762,7 @@ familiales) de chaque famille</p>
 
 </div>
 <div class="section" id="module-src.countries.france.model.lgtm">
-<span id="les-allocations-logement"></span><h2>Les allocations logement<a class="headerlink" href="#module-src.countries.france.model.lgtm" title="Permalink to this headline">¶</a></h2>
+<span id="les-allocations-logement"></span><h3>Les allocations logement<a class="headerlink" href="#module-src.countries.france.model.lgtm" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="src.countries.france.model.lgtm._al">
 <tt class="descclassname">src.countries.france.model.lgtm.</tt><tt class="descname">_al</tt><big>(</big><em>concub</em>, <em>br_al</em>, <em>so</em>, <em>loyer</em>, <em>coloc</em>, <em>isol</em>, <em>al_pac</em>, <em>zone_apl</em>, <em>_P</em><big>)</big><a class="headerlink" href="#src.countries.france.model.lgtm._al" title="Permalink to this definition">¶</a></dt>
@@ -2771,7 +2828,7 @@ et financé par le fonds national de l&#8217;habitation)</p>
 
 </div>
 <div class="section" id="module-src.countries.france.model.th">
-<span id="la-taxe-d-habitation"></span><h2>La taxe d&#8217;habitation<a class="headerlink" href="#module-src.countries.france.model.th" title="Permalink to this headline">¶</a></h2>
+<span id="la-taxe-d-habitation"></span><h3>La taxe d&#8217;habitation<a class="headerlink" href="#module-src.countries.france.model.th" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="src.countries.france.model.th._tax_hab">
 <tt class="descclassname">src.countries.france.model.th.</tt><tt class="descname">_tax_hab</tt><big>(</big><em>zthabm</em>, <em>aah</em>, <em>aspa</em>, <em>asi</em>, <em>age</em>, <em>isf_tot</em>, <em>rfr</em>, <em>statmarit</em>, <em>nbptr</em>, <em>_P</em><big>)</big><a class="headerlink" href="#src.countries.france.model.th._tax_hab" title="Permalink to this definition">¶</a></dt>
@@ -3085,6 +3142,7 @@ Values range between 1 and 6 for 6 members or more</p>
 </dd></dl>
 
 </div>
+</div>
 <div class="section" id="avertissement">
 <h2>Avertissement<a class="headerlink" href="#avertissement" title="Permalink to this headline">¶</a></h2>
 <p>OpenFisca calcule le montant de l&#8217;impôt sur le revenu et des prestations,
@@ -3113,16 +3171,21 @@ simplificatrices ont été effectuées.</p>
 <li class="toctree-l1"><a class="reference internal" href="testcase.html">Cas Type</a></li>
 <li class="toctree-l1"><a class="reference internal" href="survey.html">Microsimulation à partir de données d&#8217;enquête</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">France</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#module-src.countries.france.model.cotsoc">Les cotisations sociales</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-src.countries.france.model.irpp">L&#8217;impôt sur le revenu</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-src.countries.france.model.isf">L&#8217;impôt de solidarité sur la fortune et le bouclier fiscal</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-src.countries.france.model.mini">Les minimas sociaux</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-src.countries.france.model.pfam">Les allocations familiales</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-src.countries.france.model.lgtm">Les allocations logement</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-src.countries.france.model.th">La taxe d&#8217;habitation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parametres-generaux">Paramètres généraux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#description-du-modele-socio-fiscal">Description du modèle socio-fiscal</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#les-cotisations-sociales">Les cotisations sociales</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#l-impot-sur-le-revenu">L&#8217;impôt sur le revenu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.countries.france.model.isf">L&#8217;impôt de solidarité sur la fortune et le bouclier fiscal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.countries.france.model.mini">Les minimas sociaux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.countries.france.model.pfam">Les allocations familiales</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.countries.france.model.lgtm">Les allocations logement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.countries.france.model.th">La taxe d&#8217;habitation</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#avertissement">Avertissement</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="users.html">Usages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Participer au développement d&#8217;OpenFisca</a></li>
 </ul>
 
@@ -3146,7 +3209,7 @@ simplificatrices ont été effectuées.</p>
         <div class="left">
           <a href="survey.html" title="Microsimulation à partir de données d’enquête"
              >previous</a> |
-          <a href="contributing.html" title="Participer au développement d’OpenFisca"
+          <a href="users.html" title="Usages"
              >next</a> |
           <a href="np-modindex.html" title="Python Module Index"
              >modules</a> |

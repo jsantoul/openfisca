@@ -100,10 +100,8 @@ D'autres caractéristiques sont également disponibles.
 .. automodule:: src.countries.france.model.calage
    :members: 
    :private-members:
+
    
-   
-.. _france_warning:
-    
 Avertissement
 -------------
 
@@ -116,3 +114,4 @@ définitif de l'impôt à acquitter ou des prestations versées. En effet, votre
 familiale et/ou vos ressources ou celles de l’un des membres de votre famille peuvent
 changer ou ne pas avoir été prises en compte lors de la simulation et certaines hypothèses 
 simplificatrices ont été effectuées.
+   

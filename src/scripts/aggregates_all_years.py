@@ -10,6 +10,7 @@
 
 from src.lib.simulation import SurveySimulation 
 from src.plugins.survey.aggregates import Aggregates
+from src.plugins.survey.aggregates3 import Aggregates3
 from pandas import ExcelWriter, ExcelFile
 import os
 import pandas.rpy.common as com
@@ -33,7 +34,7 @@ def get_loyer_inflator(year):
 def build_aggregates():
 
     writer = None
-    years = range(2006,2007)
+    years = range(2007,2008)
     tot1 = 0 
     tot3 = 0
     for year in years:        
@@ -50,6 +51,9 @@ def build_aggregates():
         simu.compute()
         fin3  = time.clock()
         
+#        agg3 = Aggregates3()
+#        agg3.set_simulation(simu)
+#        agg3.compute()       
 
 #        for ent in ['ind','men','foy','fam']:
 ##            dir_name = 'T:/Myliam2/output OF/' + ent +'.csv'
@@ -66,7 +70,7 @@ def build_aggregates():
         simu.set_survey(num_table=1)
         simu.compute()
         fin1  = time.clock()        
-        
+#        
 #        agg = Aggregates()
 #        agg.set_simulation(simu)
 #        agg.compute()

@@ -43,7 +43,7 @@ def from_one_to_three(table,entity):
 # on peut en profiter pour faire l'index ici ? Ca tournerait un peu plus vite
 # mais surtout de maniere plus "essentielle"
 
-for year in  ['2006']:  # available_years: 
+for year in available_years: 
     print "debut de l annee %s" %year
     table_in_one = store.select('survey_'+str(year))
     for entity in ['ind','foy','men','fam']: 

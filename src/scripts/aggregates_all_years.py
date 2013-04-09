@@ -64,7 +64,7 @@ def build_aggregates():
 def build_aggregates3():
 
     writer = None
-    years = range(2006,2007)
+    years = range(2008,2009)
     tot1 = 0 
     tot3 = 0
     for year in years:        

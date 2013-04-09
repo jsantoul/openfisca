@@ -3,62 +3,76 @@
 """
 Convert Liam output in OpenFisca Input
 """
-from pandas import HDFStore # DataFrame
+from pandas import HDFStore, merge # DataFrame
 import numpy as np
 import pdb
+import time
+from src.lib.simulation import SurveySimulation 
 
 input = "M:\Myliam2\Model\simulTest.h5"
-input = "T:\Myliam2\Model\simulTest.h5"
-output = "T:\Myliam2\Model\to_OF.h5"
+input = "C:\Myliam2\Model\simulTest.h5"
+output = "C:\Myliam2\Model\to_OF.h5"
 
-name_convertion = {'person':'ind','declar':'foy','menage':'men'}
+name_convertion = {'person':'ind','declar':'foy','menage':'men', 'fam':'fam'}
 
 store = HDFStore(input)
-goal = HDFStore("T:/openfisca/src/countries/france/data/survey.h5")
+goal = HDFStore("C:/openfisca/src/countries/france/data/surveyLiam.h5")
 #available_years = sorted([int(x[-4:]) for x in  store.keys()])
-base = 'entities/person'
-table = store[str(base)]
-years = np.unique(table['period'].values)
 
-# table by year
-table_nom_year = {}
+
+# on travaille d'abord sur l'ensemble des tables puis on selectionne chaque annee
+
+# step 1
+table = {}
+nom = 'person'
+base = 'entities/'+nom
+ent = name_convertion[nom]
+table[ent] = store[str(base)]
+# get years
+years = np.unique(table[ent]['period'].values)
+# rename variables to make them OF ones
+table[ent] = table[ent].rename(columns={'res': 'idmen', 'quires': 'quimen', 'foy': 'idfoy'})
+table[ent]['quimen'] = table[ent]['quimen'] - 1
+table[ent]['quifoy'] = table[ent]['quifoy'] - 1
+# create fam base
+table[ent][['idfam','quifam']] = table[ent][['idmen','quimen']]
+# save information on qui == 0
+foy0 = table[ent].ix[table[ent]['quifoy']==0,['id','idfoy','idmen','idfam','period']]
+men0 = table[ent].ix[table[ent]['quimen']==0,['id','idfoy','idmen','idfam','period']]
+fam0 = men0
+
+for nom in ('menage','declar','fam'):
+    ent = name_convertion[nom]    
+    base = 'entities/'+nom
+    ident = 'id'+ent
+    if ent == 'fam':
+        table[ent] = eval(ent +'0')
+    else :
+        table[ent] = store[str(base)].rename(columns={'id': ident})
+        table[ent] = merge(table[ent], eval(ent +'0'), how='left', left_on=[ident,'period'], right_on=[ident,'period'])
+                   
+            
 for year in years:
-    table_year = {}
-    store.remove('survey_'+str(year))
-    for nom in ('person','menage','declar'):
-        base = 'entities/'+nom
-        table_nom = store[str(base)] 
-        to_keep = table_nom['period']==year
-        table_year[nom] = table_nom[to_keep]
-        nom_of = name_convertion[nom]
-        key = 'survey_'+str(year) + '/'+str(nom_of)
-        store.put(key, table_year[nom])
-        
-#pdb.set_trace()
-#store.keys()
-#goal.keys()
-#store.select('survey_2009/declar')
-#goal.select('survey_2009')
-#store.close()
-#
-#
-#
-#
-#
-#tab = table_nom_year[2009]
-#tabp = tab['person']
-#tabp_ref = tabp['quires']==1
-#tabp_res = tabp['res']
-#tabp_res[tabp_ref]
+    goal.remove('survey_'+str(year))
+    for ent in ('ind','men','foy','fam'):
+        tab = table[ent].ix[table[ent]['period']==year]
+        key = 'survey_'+str(year) + '/'+ent     
+        goal.put(key, tab) 
+store.close()
+goal.close()
 
+# on fais maintenant tourner le modèle OF
+country = 'france'    
+for year in years:        
+    yr = str(year)
+    deb3 =  time.clock()
+    simu = SurveySimulation()
+    simu.set_config(year = yr, country = country)
+    simu.set_param()
+    simu.set_survey(filename="C:/openfisca/src/countries/france/data/surveyLiam.h5", num_table=3)
+    simu.compute()
+    fin3  = time.clock()
 
-    
-    
-
-
-
-
-# get columns used by the tax and benefit system
 
 
 

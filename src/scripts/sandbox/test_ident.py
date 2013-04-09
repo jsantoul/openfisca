@@ -31,6 +31,10 @@ for year in range(2006,2010):
         diff1 = set(list_qui).symmetric_difference(list_ident)
         for id in diff1:
             print "id%s %i doesn't have a head" %(entity, id)
+        if len(np.unique(list_qui)) != len(list_qui):
+            double = list_qui.value_counts()[list_qui.value_counts()>1]
+            for k in range(len(double)):
+                print "id%s %i has %i heads" %(entity, double.index[k], double.values[k] )
 
                 
 

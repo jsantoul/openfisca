@@ -36,7 +36,7 @@ class DataTable3(object):
         self.index = {}
         self._nrows = 0
         self.num_table = num_table
-        #TODO :est-ce le bon endroit ? MBJ: Try to be more general by importing the entities from relevant country using of_import
+        #TODO: Try to be more general by importing the entities from relevant country using of_import
         self.list_entities = ['ind','men','foy','fam']
         
         if datesim is None:
@@ -92,10 +92,12 @@ class DataTable3(object):
             self.index[entity] = {}
             dct = self.index[entity]
             idxlist = np.unique(idx)
-            if len(idxlist) is not len(self.table3[entity]):
-                print "WARNING: list of ident is not consistent for %s" %entity
+            if len(idxlist) != len(self.table3[entity]):
+                print "Warning: list of ident is not consistent for %s" %entity
+                print self.survey_year, len(idxlist), len(self.table3[entity])
+                pdb.set_trace()
             #dct['nb'] = len(idxlist)
-            dct['nb'] = len(self.table3[entity])
+            dct['nb'] = len(idxlist)
             
             self.index['ind'][entity] = np.searchsorted(idxlist, idx)
 
@@ -182,6 +184,7 @@ class DataTable3(object):
                 try:   
                     self.table3[ent][col.name] = self.table3[ent][col.name].astype(col._dtype)
                 except:
+                    pdb.set_trace()
                     raise Exception("Impossible de lire la variable suivante issue des données d'enquête :\n %s \n  " %col.name) 
         if ent == 'foy':
             self.table3[ent] = self.table3[ent].to_sparse(fill_value=0)   
@@ -317,6 +320,8 @@ class DataTable3(object):
                 else: 
                     idx_from = indiv                          
                 temp[idx['idxUnit']] = var[idx_from]
+                if person ==1 and dent != 'ind': 
+                    pdb.set_trace()
                 out[person] = temp         
             if sum_ is False:
                 return out
@@ -350,8 +355,10 @@ class DataTable3(object):
         if entity=='ind' : 
             self.table3[entity].ix[idx['idxIndi'], [varname]] = value
         else:
-            self.table3[entity].ix[idx['idxUnit'], [varname]] = value
-
+            try: 
+                self.table3[entity].ix[idx['idxUnit'], [varname]] = value
+            except: 
+                pdb.set_trace()
             
     def to_csv(self, fname):
         # TODO: 

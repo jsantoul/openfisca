@@ -51,8 +51,12 @@ for year in available_years:
     table_in_one =  table_in_one[ - table_in_one['idfam'].isin([700986003, 700202209, 700150006, 
                                                                 700165702, 701609502,
                                                                 801132105, 802846205, 800571404,
-                                                                901461205])]
-    table_in_one =  table_in_one[ - table_in_one['idmen'].isin([8009658,9046607]) ] 
+                                                                901461205,
+                                                                800199302, 802008401, 800422201, 802738601,
+                                                                903972102, 901676301, 900817401])]
+    table_in_one =  table_in_one[ - table_in_one['idmen'].isin([8009658,9046607, 
+                                                                8020084, 8001993, 8004222, 8027386,
+                                                                9039721, 9047848, 9016763]) ] 
     print len(table_in_one)        
     for entity in ['ind','foy','men','fam']: 
         key = 'survey_'+str(year) + '/'+str(entity)

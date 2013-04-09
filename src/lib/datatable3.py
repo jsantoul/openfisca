@@ -95,7 +95,7 @@ class DataTable3(object):
             if len(idxlist) != len(self.table3[entity]):
                 print "Warning: list of ident is not consistent for %s" %entity
                 print self.survey_year, len(idxlist), len(self.table3[entity])
-                pdb.set_trace()
+
             #dct['nb'] = len(idxlist)
             dct['nb'] = len(idxlist)
             
@@ -315,8 +315,15 @@ class DataTable3(object):
                 temp = np.ones(nb, dtype = dtyp)*dflt
                 idx = self.index[entity][person]
                 indiv = idx['idxIndi']  
+                # en fait on séléctionne deux valeurs si quident == 0 et quientity ==1
                 if dent is not 'ind':
-                    idx_from = self.index['ind'][dent][indiv]                            
+                    idx_from = self.index['ind'][dent][indiv]     
+                    if opt == [0,1] and person==0:
+                        selected = idx['idxUnit']
+                    elif opt == [0,1] and person==1:
+                        not_selected = [x for x in idx['idxUnit'] if x not in selected]   
+                        idx_from = idx_from[not_selected]
+                        idx['idxUnit'] = idx['idxUnit'][not_selected]                                        
                 else: 
                     idx_from = indiv                          
                 temp[idx['idxUnit']] = var[idx_from]
@@ -355,10 +362,7 @@ class DataTable3(object):
         if entity=='ind' : 
             self.table3[entity].ix[idx['idxIndi'], [varname]] = value
         else:
-            try: 
-                self.table3[entity].ix[idx['idxUnit'], [varname]] = value
-            except: 
-                pdb.set_trace()
+            self.table3[entity].ix[idx['idxUnit'], [varname]] = value
             
     def to_csv(self, fname):
         # TODO: 

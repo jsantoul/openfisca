@@ -36,7 +36,7 @@ class DataTable3(object):
         self.index = {}
         self._nrows = 0
         self.num_table = num_table
-        #TODO :est-ce le bon endroit ? 
+        #TODO :est-ce le bon endroit ? MBJ: Try to be more general by importing the entities from relevant country using of_import
         self.list_entities = ['ind','men','foy','fam']
         
         if datesim is None:

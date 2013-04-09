@@ -34,6 +34,36 @@ def get_loyer_inflator(year):
 def build_aggregates():
 
     writer = None
+    years = range(2006,2010)
+    for year in years:        
+        yr = str(year)
+#        fname = "Agg_%s.%s" %(str(yr), "xls")
+        simu = SurveySimulation()
+        simu.set_config(year = yr, country = country)
+        simu.set_param()
+        simu.set_survey()
+        inflator = get_loyer_inflator(year)
+        simu.inflate_survey({'loyer' : inflator})
+        simu.compute()
+        
+        agg = Aggregates()
+        agg.set_simulation(simu)
+        agg.compute()
+
+        if writer is None:
+            writer = ExcelWriter(str(fname_all))
+        agg.aggr_frame.to_excel(writer, yr, index= False, header= True)
+        del simu
+        del agg
+        import gc
+        gc.collect()
+    
+    writer.save()
+
+
+def build_aggregates3():
+
+    writer = None
     years = range(2006,2007)
     tot1 = 0 
     tot3 = 0
@@ -135,4 +165,4 @@ if __name__ == '__main__':
 #    diag_aggregates()
 #    test()
 
-    build_aggregates()
+    build_aggregates3()

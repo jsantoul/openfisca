@@ -92,7 +92,10 @@ class DataTable3(object):
             self.index[entity] = {}
             dct = self.index[entity]
             idxlist = np.unique(idx)
-            dct['nb'] = len(idxlist)
+            if len(idxlist) is not len(self.table3[entity]):
+                print "WARNING: list of ident is not consistent for %s" %entity
+            #dct['nb'] = len(idxlist)
+            dct['nb'] = len(self.table3[entity])
             
             self.index['ind'][entity] = np.searchsorted(idxlist, idx)
 
@@ -231,11 +234,11 @@ class DataTable3(object):
         ----------
         entity : str, default None
                  if "ind" or None return every individual, else return individuals belonging to the entity
-                 if entity not the natural value for varname, sum over all members of entity
-            Note that entity has not the same role if opt is or is not None. 
+                 if entity not the natural value for varname, sum over all members of entity who are 
+                 qui+'col.entity'==0
                  
         opt : dict
-             dict with the id of the person for which you want the value
+             dict with the id of the person for which you want the value in entity
             - if opt is None, returns the value for the person 0 (i.e. 'vous' for 'foy', 'chef' for 'fam', 'pref' for 'men' in the "france" case)
             - if opt is not None, return a dict with key 'person' and values for this person in each entity
         
@@ -244,17 +247,19 @@ class DataTable3(object):
         sumout: array
         
         '''
+        # caracteristics of varname
         col = self.description.get_col(varname)
         dflt = col._default
         dtyp = col._dtype
         dent = col.entity
-        
         
         var = np.array(self.table3[dent][varname].values, dtype = col._dtype)
         
         if opt is not None and entity is None : 
             raise Exception("Entity must be given when opt is given")
         
+        # Define a mode depending if we want to sum variable over each entity
+        # or if we want to data to each member of the biger entity
         if entity is not None and opt is None:
             if (entity=='ind' and dent is not 'ind') or \
               (entity=='foy' and dent not in ('ind','foy')) or \
@@ -270,23 +275,26 @@ class DataTable3(object):
         if entity is None:
             entity = col.entity
                                
-            
+        nb = self.index[entity]['nb']    
         if opt is None:
-            nb = self.index[entity]['nb']
             if col.entity == entity: 
                 return var
             else: 
+                # sum over all individuals according to their Unit
+                # One entity should be only once in the count, that
+                # the reason we select all value for individual but only
+                # value for qui==0 in other cases
                 temp = np.ones(nb, dtype = dtyp)*dflt
-                if mode == 'aggr':               
-                    for person in range(0,10):                        
-                        if col.entity is 'ind':
+                if mode == 'aggr':                                      
+                    if col.entity is 'ind':
+                        for person in range(0,10): 
                             idx = self.index[entity][person]
                             temp[idx['idxUnit']] += var[idx['idxIndi']]
-                        else:
-                            idx = self.index[dent][person]
-                            indiv = idx['idxIndi']  
-                            idx_to = self.index['ind'][entity][indiv] 
-                            temp[idx['idxUnit']] += var[idx['idxIndi']]
+                    else:
+                        idx = self.index[dent][0]
+                        indiv = idx['idxIndi']  
+                        idx_to = self.index['ind'][entity][indiv] 
+                        temp[idx_to] += var[idx['idxUnit']]
                     return temp
                                        
                 elif mode == 'expand': 
@@ -300,12 +308,16 @@ class DataTable3(object):
                     return temp
         else:            
             out = {}
-            nb = self.index[entity]['nb']
             for person in opt:
                 temp = np.ones(nb, dtype = dtyp)*dflt
                 idx = self.index[entity][person]
-                temp[idx['idxUnit']] = var[idx['idxIndi']]
-                out[person] = temp             
+                indiv = idx['idxIndi']  
+                if dent is not 'ind':
+                    idx_from = self.index['ind'][dent][indiv]                            
+                else: 
+                    idx_from = indiv                          
+                temp[idx['idxUnit']] = var[idx_from]
+                out[person] = temp         
             if sum_ is False:
                 return out
             else:
@@ -339,6 +351,7 @@ class DataTable3(object):
             self.table3[entity].ix[idx['idxIndi'], [varname]] = value
         else:
             self.table3[entity].ix[idx['idxUnit'], [varname]] = value
+
             
     def to_csv(self, fname):
         # TODO: 
@@ -463,11 +476,11 @@ class SystemSf3(DataTable3):
         '''
         if varname is None:
             for col in self.description.columns.itervalues():
-                try:
-                    self.calculate(col.name)
-                except Exception as e:
-                    print e
-                    print col.name
+#                try:
+                self.calculate(col.name)
+#                except Exception as e:
+#                    print e
+#                    print col.name
             return # Will calculate all and exit
         
         col = self.description.get_col(varname)
@@ -515,6 +528,7 @@ class SystemSf3(DataTable3):
         provided = set(funcArgs.keys())        
         if provided != required:
             raise Exception('%s missing: %s needs %s but only %s were provided' % (str(list(required - provided)), self._name, str(list(required)), str(list(provided))))
-        print varname
+        if varname == 'paje_clca':
+            pdb.set_trace()
         self.set_value(varname, col._func(**funcArgs), ent)
         col._isCalculated = True

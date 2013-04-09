@@ -10,6 +10,7 @@
 
 from src.lib.simulation import SurveySimulation 
 from src.plugins.survey.aggregates import Aggregates
+from src.plugins.survey.aggregates3 import Aggregates3
 from pandas import ExcelWriter, ExcelFile
 import os
 import pandas.rpy.common as com
@@ -80,6 +81,9 @@ def build_aggregates3():
         simu.compute()
         fin3  = time.clock()
         
+#        agg3 = Aggregates3()
+#        agg3.set_simulation(simu)
+#        agg3.compute()       
 
 #        for ent in ['ind','men','foy','fam']:
 ##            dir_name = 'T:/Myliam2/output OF/' + ent +'.csv'
@@ -96,7 +100,7 @@ def build_aggregates3():
         simu.set_survey(num_table=1)
         simu.compute()
         fin1  = time.clock()        
-        
+#        
 #        agg = Aggregates()
 #        agg.set_simulation(simu)
 #        agg.compute()

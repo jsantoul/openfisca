@@ -108,6 +108,7 @@ encoding//src/plugins/scenario/table.py=utf-8
 encoding//src/plugins/survey/Calibration.py=utf-8
 encoding//src/plugins/survey/__init__.py=utf-8
 encoding//src/plugins/survey/aggregates.py=utf-8
+encoding//src/plugins/survey/aggregates3.py=utf-8
 encoding//src/plugins/survey/distribution.py=utf-8
 encoding//src/plugins/survey/inequality.py=utf-8
 encoding//src/plugins/survey/survey_explorer.py=utf-8

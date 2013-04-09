@@ -528,7 +528,5 @@ class SystemSf3(DataTable3):
         provided = set(funcArgs.keys())        
         if provided != required:
             raise Exception('%s missing: %s needs %s but only %s were provided' % (str(list(required - provided)), self._name, str(list(required)), str(list(provided))))
-        if varname == 'paje_clca':
-            pdb.set_trace()
         self.set_value(varname, col._func(**funcArgs), ent)
         col._isCalculated = True

@@ -34,7 +34,7 @@ def get_loyer_inflator(year):
 def build_aggregates():
 
     writer = None
-    years = range(2007,2008)
+    years = range(2006,2010)
     tot1 = 0 
     tot3 = 0
     for year in years:        

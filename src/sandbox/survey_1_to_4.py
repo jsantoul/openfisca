@@ -45,22 +45,25 @@ def from_one_to_three(table,entity):
 
 for year in available_years: 
     print "debut de l annee %s" %year
-    table_in_one = store.select('survey_'+str(year))
+    table_in_one = store.select('survey_'+str(year))    
+    # delete some people on every table according to test_ident.py results
+    print len(table_in_one)
+    table_in_one =  table_in_one[ - table_in_one['idfam'].isin([700986003, 700202209, 700150006, 
+                                                                700165702, 701609502,
+                                                                801132105, 802846205, 800571404,
+                                                                901461205])]
+    table_in_one =  table_in_one[ - table_in_one['idmen'].isin([8009658,9046607]) ] 
+    print len(table_in_one)        
     for entity in ['ind','foy','men','fam']: 
         key = 'survey_'+str(year) + '/'+str(entity)
-        vars_entity = from_one_to_three(table_in_one,entity) 
-        print entity, vars_entity
-        if entity == 'foy':   
+        vars_entity = from_one_to_three(table_in_one,entity)         
+        print entity, vars_entity        
+        if entity == 'ind': 
+            table_entity = table_in_one[vars_entity]
+        # we take care have all ident and selecting qui==0
+        else:   
             enum = 'qui'+entity
             table_entity = table_in_one.ix[table_in_one[enum] ==0 ,['noi','idmen','idfoy','idfam'] + vars_entity]
-        elif entity == 'men':   
-            enum = 'qui'+entity
-            table_entity = table_in_one.ix[table_in_one[enum] == 0 ,['noi','idmen','idfoy','idfam'] + vars_entity]
-        elif entity == 'fam':   
-            enum = 'qui'+entity
-            table_entity = table_in_one.ix[table_in_one[enum] == 0 ,['noi','idmen','idfoy','idfam'] + vars_entity]
-        else : 
-            table_entity = table_in_one[vars_entity]
         print key
         output.put(key, table_entity)
     del table_in_one

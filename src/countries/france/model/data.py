@@ -860,8 +860,8 @@ class InputTable(ModelDescription):
     restit_imp= IntCol()
         
     # to remove
-    champm = BoolCol(entity='men')
-    wprm = FloatCol(entity='men')
+    champm = BoolCol(entity='men', default = True)
+    wprm = FloatCol(entity='men', default = 1)
     etr = IntCol()     
     coloc = BoolCol()
     csg_rempl = EnumCol(label = u"Taux retenu sur la CSG des revenus de remplacment",

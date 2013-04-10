@@ -36,8 +36,6 @@ class DataTable3(object):
         self.index = {}
         self._nrows = 0
         self.num_table = num_table
-        #TODO :est-ce le bon endroit ? MBJ: Try to be more general by importing the entities from relevant country using of_import
-        self.list_entities = ['ind','men','foy','fam']
         
         if datesim is None:
             raise Exception('InputTable: datesim should be provided')
@@ -49,6 +47,7 @@ class DataTable3(object):
         else:
             self.country = country
                     
+        self.list_entities = ['ind']+of_import(None, 'ENTITIES_INDEX', self.country)
         self.survey_year = None
         
         # Build the description attribute        
@@ -92,8 +91,10 @@ class DataTable3(object):
             self.index[entity] = {}
             dct = self.index[entity]
             idxlist = np.unique(idx)
-            if len(idxlist) is not len(self.table3[entity]):
-                print "WARNING: list of ident is not consistent for %s" %entity
+            if len(idxlist) != len(self.table3[entity]):
+                print "Warning: list of ident is not consistent for %s" %entity
+                print self.survey_year, len(idxlist), len(self.table3[entity])
+
             #dct['nb'] = len(idxlist)
             dct['nb'] = len(self.table3[entity])
             
@@ -182,6 +183,7 @@ class DataTable3(object):
                 try:   
                     self.table3[ent][col.name] = self.table3[ent][col.name].astype(col._dtype)
                 except:
+                    pdb.set_trace()
                     raise Exception("Impossible de lire la variable suivante issue des données d'enquête :\n %s \n  " %col.name) 
         if ent == 'foy':
             self.table3[ent] = self.table3[ent].to_sparse(fill_value=0)   
@@ -289,7 +291,10 @@ class DataTable3(object):
                     if col.entity is 'ind':
                         for person in range(0,10): 
                             idx = self.index[entity][person]
-                            temp[idx['idxUnit']] += var[idx['idxIndi']]
+                            try:
+                                temp[idx['idxUnit']] += var[idx['idxIndi']]
+                            except:
+                                pdb.set_trace()
                     else:
                         idx = self.index[dent][0]
                         indiv = idx['idxIndi']  
@@ -310,10 +315,18 @@ class DataTable3(object):
             out = {}
             for person in opt:
                 temp = np.ones(nb, dtype = dtyp)*dflt
-                idx = self.index[entity][person]
+                idx = self.index[entity][person].copy()
                 indiv = idx['idxIndi']  
+                # en fait on séléctionne deux valeurs si quident == 0 et quientity ==1
                 if dent is not 'ind':
-                    idx_from = self.index['ind'][dent][indiv]                            
+                    idx_from = self.index['ind'][dent][indiv].copy()     
+                    if opt == [0,1] and person==0:
+                        selected = idx['idxUnit']
+                    elif opt == [0,1] and person==1:
+                        not_selected = [x for x in idx['idxUnit'] if x not in selected]   
+                        idx_from = idx_from[not_selected]
+                        idx['idxUnit'] = idx['idxUnit'][not_selected] 
+                                                               
                 else: 
                     idx_from = indiv                          
                 temp[idx['idxUnit']] = var[idx_from]
@@ -351,7 +364,6 @@ class DataTable3(object):
             self.table3[entity].ix[idx['idxIndi'], [varname]] = value
         else:
             self.table3[entity].ix[idx['idxUnit'], [varname]] = value
-
             
     def to_csv(self, fname):
         # TODO: 
@@ -528,7 +540,5 @@ class SystemSf3(DataTable3):
         provided = set(funcArgs.keys())        
         if provided != required:
             raise Exception('%s missing: %s needs %s but only %s were provided' % (str(list(required - provided)), self._name, str(list(required)), str(list(provided))))
-        if varname == 'paje_clca':
-            pdb.set_trace()
         self.set_value(varname, col._func(**funcArgs), ent)
         col._isCalculated = True

@@ -81,19 +81,22 @@ def build_aggregates3():
         simu.compute()
         fin3  = time.clock()
         
-#        agg3 = Aggregates3()
-#        agg3.set_simulation(simu)
-#        agg3.compute()       
+        agg3 = Aggregates3()
+        agg3.set_simulation(simu)
+        agg3.compute()
+#        if writer is None:
+#            writer = ExcelWriter(str(fname_all))       
+#        agg.aggr_frame.to_excel(writer, yr, index= False, header= True)
 
-#        for ent in ['ind','men','foy','fam']:
-##            dir_name = 'T:/Myliam2/output OF/' + ent +'.csv'
+        for ent in ['ind','men','foy','fam']:
+            dir_name = 'M:/Myliam2/output OF/' + ent +'.csv'
 ##            simu.survey.table3[ent].to_csv(dir_name)
 #            import pdb
 #            pdb.set_trace()
 ##            com.convert_to_r_dataframe
 #            
 #            dir_name = 'T:/Myliam2/output OF/' + 'output_'  + ent +'.csv'
-#            simu.outputs.table3[ent].to_csv(dir_name)
+            simu.outputs.table3[ent][:30].to_csv(dir_name)
 
         
         deb1 = time.clock()

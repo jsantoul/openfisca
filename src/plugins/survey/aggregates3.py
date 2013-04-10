@@ -181,6 +181,7 @@ class Aggregates3(object):
             varcol  = description.get_col(var)            
             entity = varcol._entity
             # amounts and beneficiaries from current data and default data if exists
+            print varcol, entity, var
             data, data_default = simulation.aggregated_by_entity(entity, [var], all_output_vars = False, force_sum = True)
                                                 
             datasets = {'data': data}
@@ -322,7 +323,7 @@ class Aggregates3(object):
                 descr.to_excel(writer, "description", index = False, header=False)
                 writer.save()
             elif table_format =="csv":
-                df.to_csv(fname, "aggregates", index= False, header = True)
+                df.to_csv(fname, "aggregates3", index= False, header = True)
                          
         except Exception, e:
                 raise Exception("Aggregates: Error saving file", str(e))

@@ -562,20 +562,19 @@ class SurveySimulation(Simulation):
             out_dct = {}
             inputs = model._inputs
             idx = entity
-            try:
-                enum = inputs.description.get_col('qui'+entity).enum
-                people = [x[1] for x in enum]
-                
-            except:
-                people = None
+            if self.num_table == 1:
+                try:
+                    enum = inputs.description.get_col('qui'+entity).enum
+                    people = [x[1] for x in enum]
+                    
+                except:
+                    people = None
 
             input_varlist = set([WEIGHT])
             if all_input_vars:           
                 input_varlist = input_varlist.union(set(inputs.col_names))
             if varlist is not None:
                 input_varlist = input_varlist.union( set(inputs.col_names).intersection(varlist))
- 
-            if varlist is not None:
                 output_varlist = set(model.col_names).intersection(varlist)    
             if all_output_vars:
                 output_varlist = set(model.col_names)

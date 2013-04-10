@@ -64,7 +64,7 @@ def build_aggregates():
 def build_aggregates3():
 
     writer = None
-    years = range(2008,2009)
+    years = range(2006,2007)
     tot1 = 0 
     tot3 = 0
     for year in years:        
@@ -85,15 +85,15 @@ def build_aggregates3():
 #        agg3.set_simulation(simu)
 #        agg3.compute()       
 
-#        for ent in ['ind','men','foy','fam']:
-##            dir_name = 'T:/Myliam2/output OF/' + ent +'.csv'
+        for ent in ['ind','men','foy','fam']:
+            dir_name = 'M:/Myliam2/output OF/' + ent +'.csv'
 ##            simu.survey.table3[ent].to_csv(dir_name)
 #            import pdb
 #            pdb.set_trace()
 ##            com.convert_to_r_dataframe
 #            
 #            dir_name = 'T:/Myliam2/output OF/' + 'output_'  + ent +'.csv'
-#            simu.outputs.table3[ent].to_csv(dir_name)
+            simu.outputs.table3[ent][:30].to_csv(dir_name)
 
         
         deb1 = time.clock()

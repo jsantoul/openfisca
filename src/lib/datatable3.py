@@ -97,7 +97,7 @@ class DataTable3(object):
                 print self.survey_year, len(idxlist), len(self.table3[entity])
 
             #dct['nb'] = len(idxlist)
-            dct['nb'] = len(idxlist)
+            dct['nb'] = len(self.table3[entity])
             
             self.index['ind'][entity] = np.searchsorted(idxlist, idx)
 
@@ -292,7 +292,10 @@ class DataTable3(object):
                     if col.entity is 'ind':
                         for person in range(0,10): 
                             idx = self.index[entity][person]
-                            temp[idx['idxUnit']] += var[idx['idxIndi']]
+                            try:
+                                temp[idx['idxUnit']] += var[idx['idxIndi']]
+                            except:
+                                pdb.set_trace()
                     else:
                         idx = self.index[dent][0]
                         indiv = idx['idxIndi']  
@@ -313,22 +316,21 @@ class DataTable3(object):
             out = {}
             for person in opt:
                 temp = np.ones(nb, dtype = dtyp)*dflt
-                idx = self.index[entity][person]
+                idx = self.index[entity][person].copy()
                 indiv = idx['idxIndi']  
                 # en fait on séléctionne deux valeurs si quident == 0 et quientity ==1
                 if dent is not 'ind':
-                    idx_from = self.index['ind'][dent][indiv]     
+                    idx_from = self.index['ind'][dent][indiv].copy()     
                     if opt == [0,1] and person==0:
                         selected = idx['idxUnit']
                     elif opt == [0,1] and person==1:
                         not_selected = [x for x in idx['idxUnit'] if x not in selected]   
                         idx_from = idx_from[not_selected]
-                        idx['idxUnit'] = idx['idxUnit'][not_selected]                                        
+                        idx['idxUnit'] = idx['idxUnit'][not_selected] 
+                                                               
                 else: 
                     idx_from = indiv                          
                 temp[idx['idxUnit']] = var[idx_from]
-                if person ==1 and dent != 'ind': 
-                    pdb.set_trace()
                 out[person] = temp         
             if sum_ is False:
                 return out

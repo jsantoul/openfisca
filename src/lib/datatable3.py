@@ -36,8 +36,6 @@ class DataTable3(object):
         self.index = {}
         self._nrows = 0
         self.num_table = num_table
-        #TODO: Try to be more general by importing the entities from relevant country using of_import
-        self.list_entities = ['ind','men','foy','fam']
         
         if datesim is None:
             raise Exception('InputTable: datesim should be provided')
@@ -49,6 +47,7 @@ class DataTable3(object):
         else:
             self.country = country
                     
+        self.list_entities = ['ind']+of_import(None, 'ENTITIES_INDEX', self.country)
         self.survey_year = None
         
         # Build the description attribute        

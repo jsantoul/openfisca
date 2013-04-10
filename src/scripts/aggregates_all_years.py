@@ -81,9 +81,12 @@ def build_aggregates3():
         simu.compute()
         fin3  = time.clock()
         
-#        agg3 = Aggregates3()
-#        agg3.set_simulation(simu)
-#        agg3.compute()       
+        agg3 = Aggregates3()
+        agg3.set_simulation(simu)
+        agg3.compute()
+#        if writer is None:
+#            writer = ExcelWriter(str(fname_all))       
+#        agg.aggr_frame.to_excel(writer, yr, index= False, header= True)
 
         for ent in ['ind','men','foy','fam']:
             dir_name = 'M:/Myliam2/output OF/' + ent +'.csv'

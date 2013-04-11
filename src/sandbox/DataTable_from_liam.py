@@ -58,6 +58,15 @@ for year in years:
         tab = table[ent].ix[table[ent]['period']==year]
         key = 'survey_'+str(year) + '/'+ent     
         goal.put(key, tab) 
+    if year == 2010:
+        pdb.set_trace()
+        len(tab['idfam'])
+        len(np.unique(tab['idfam']))
+        list_qui = tab['idfam']
+        double = list_qui.value_counts()[list_qui.value_counts()>1]
+        tabind = table['ind'].ix[table['ind']['period']==year]
+        
+        
 store.close()
 goal.close()
 

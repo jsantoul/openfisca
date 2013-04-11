@@ -562,11 +562,11 @@ class SurveySimulation(Simulation):
             out_dct = {}
             inputs = model._inputs
             idx = entity
+            people = None
             if self.num_table == 1:
                 try:
                     enum = inputs.description.get_col('qui'+entity).enum
-                    people = [x[1] for x in enum]
-                    
+                    people = [x[1] for x in enum]         
                 except:
                     people = None
 
@@ -575,6 +575,7 @@ class SurveySimulation(Simulation):
                 input_varlist = input_varlist.union(set(inputs.col_names))
             if varlist is not None:
                 input_varlist = input_varlist.union( set(inputs.col_names).intersection(varlist))
+            if varlist is not None:    
                 output_varlist = set(model.col_names).intersection(varlist)    
             if all_output_vars:
                 output_varlist = set(model.col_names)

@@ -23,7 +23,7 @@ def _nb_par(quifam, _option={'quifam':[PART]}):
     '''
     return 1 + 1 * (quifam[PART] == 1) 
     
-def _maries(statmarit):
+def _maries(statmarit , _option = {'statmarit': [CHEF]}):
     '''
     couple = 1 si couple marié sinon 0 TODO faire un choix avec couple ? 
     '''

@@ -53,28 +53,28 @@ def _nb_adult(marpac, celdiv, veuf):
 def _nb_pac(nbF, nbJ, nbR):
     return nbF + nbJ + nbR
         
-def _marpac(statmarit):
+def _marpac(statmarit, _option = {'statmarit': [VOUS]}):
     '''
     Marié (1) ou Pacsé (5)
     'foy'
     '''
     return (statmarit == 1) | (statmarit == 5)
 
-def _celdiv(statmarit):
+def _celdiv(statmarit , _option = {'statmarit': [VOUS]}):
     '''
     Célibataire (2) ou divorcé (3)
     'foy'
     '''
     return (statmarit == 2) | (statmarit == 3)
 
-def _veuf(statmarit):
+def _veuf(statmarit , _option = {'statmarit': [VOUS]}):
     '''
     Veuf (4)
     'foy'
     '''
     return statmarit == 4
 
-def _jveuf(statmarit):
+def _jveuf(statmarit , _option = {'statmarit': [VOUS]}):
     '''
     Jeune Veuf
     'foy'

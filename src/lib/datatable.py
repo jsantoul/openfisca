@@ -246,6 +246,11 @@ class DataTable(object):
         dtyp = col._dtype
         var = np.array(self.table[varname].values, dtype = col._dtype)
         
+        # solve a problem for num_table = 3 since we add opt = [0] sometimes
+        if opt is not None:
+            if len(opt)==1:
+                opt = None
+        
         if entity is None:
             entity = "ind"
         

@@ -21,7 +21,7 @@ def _nb_par(quifam, _option={'quifam':[PART]}):
     Nombre d'adultes (parents) dans la famille
     'fam'
     '''
-    return 1 + 1 * (quifam[PART] == 1) 
+    return 1 + 1 * (quifam == 1) 
     
 def _maries(statmarit , _option = {'statmarit': [CHEF]}):
     '''

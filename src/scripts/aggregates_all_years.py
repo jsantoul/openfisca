@@ -75,27 +75,27 @@ def build_aggregates3():
         simu.set_param()
         import time
         
-#        
-#        deb3 = time.clock()
-#        simu.set_survey(num_table=3)
-#        simu.compute()
-#        fin3  = time.clock()
-#        
-#        agg3 = Aggregates3()
-#        agg3.set_simulation(simu)
-#        agg3.compute()
-##        if writer is None:
-##            writer = ExcelWriter(str(fname_all))  
-#        fname_all = os.path.join(destination_dir, 'agg3.xlsx') 
-#        agg3.aggr_frame.to_excel(fname_all, yr, index= False, header= True)
-#
-#        for ent in ['ind','men','foy','fam']:
-#            dir_name = destination_dir + ent +'.csv'
-###            simu.survey.table3[ent].to_csv(dir_name)
-##            import pdb
-##            pdb.set_trace()
-###            com.convert_to_r_dataframe
-#            simu.outputs.table3[ent][:num_output].to_csv(dir_name)
+        
+        deb3 = time.clock()
+        simu.set_survey(num_table=3)
+        simu.compute()
+        fin3  = time.clock()
+        
+        agg3 = Aggregates3()
+        agg3.set_simulation(simu)
+        agg3.compute()
+#        if writer is None:
+#            writer = ExcelWriter(str(fname_all))  
+        fname_all = os.path.join(destination_dir, 'agg3.xlsx') 
+        agg3.aggr_frame.to_excel(fname_all, yr, index= False, header= True)
+
+        for ent in ['ind','men','foy','fam']:
+            dir_name = destination_dir + ent +'.csv'
+##            simu.survey.table3[ent].to_csv(dir_name)
+#            import pdb
+#            pdb.set_trace()
+##            com.convert_to_r_dataframe
+            simu.outputs.table3[ent][:num_output].to_csv(dir_name)
 
         
         deb1 = time.clock()
@@ -108,25 +108,25 @@ def build_aggregates3():
         print "prob output"
         simu.outputs.table[:num_output].to_csv(dir_name)
         
-#        agg = Aggregates()
-#        print "prob set"
-#        agg.set_simulation(simu)
-#        print "prob compute"
-#        agg.compute()
-#
-##        if writer is None:
-##            writer = ExcelWriter(str(fname_all))
-#        fname_all = os.path.join(destination_dir, 'agg1.xlsx') 
-#        print "prob ind"
-#        agg.aggr_frame.to_excel(fname_all, yr, index= False, header= True)
-#        del simu
-#        del agg
-#        import gc
-#        gc.collect()
-#        tot1 += fin1 - deb1
-#        tot3 += fin3 - deb3
-#        print "Time to process 1 table :" +str(fin1 - deb1)
-#        print "Time to process 3 table :" +str(fin3 - deb3)
+        agg = Aggregates()
+        print "prob set"
+        agg.set_simulation(simu)
+        print "prob compute"
+        agg.compute()
+
+#        if writer is None:
+#            writer = ExcelWriter(str(fname_all))
+        fname_all = os.path.join(destination_dir, 'agg1.xlsx') 
+        print "prob ind"
+        agg.aggr_frame.to_excel(fname_all, yr, index= False, header= True)
+        del simu
+        del agg
+        import gc
+        gc.collect()
+        tot1 += fin1 - deb1
+        tot3 += fin3 - deb3
+        print "Time to process 1 table :" +str(fin1 - deb1)
+        print "Time to process 3 table :" +str(fin3 - deb3)
     print tot1, tot3, tot3- tot1
 #    writer.save()
 

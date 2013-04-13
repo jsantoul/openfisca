@@ -1,0 +1,425 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Cas Type &mdash; openfisca TODO documentation</title>
+    
+    <link rel="stylesheet" href="_static/agogo.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     'TODO',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="openfisca TODO documentation" href="index.html" />
+    <link rel="next" title="Microsimulation à partir de données d’enquête" href="survey.html" />
+    <link rel="prev" title="Overview" href="overview.html" /> 
+  </head>
+  <body>
+    <div class="header-wrapper">
+      <div class="header">
+        <div class="headertitle"><a
+          href="index.html">openfisca TODO documentation</a></div>
+        <div class="rel">
+          <a href="overview.html" title="Overview"
+             accesskey="P">previous</a> |
+          <a href="survey.html" title="Microsimulation à partir de données d’enquête"
+             accesskey="N">next</a> |
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="cas-type">
+<span id="testcase"></span><h1>Cas Type<a class="headerlink" href="#cas-type" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="exemple">
+<h2>Exemple<a class="headerlink" href="#exemple" title="Permalink to this headline">¶</a></h2>
+<p>Un exemple simple simulant un cas type est donné dans le fichier src/scripts/example.py
+reproduit ici</p>
+<blockquote>
+<div><div class="highlight-python"><div class="highlight"><pre><span class="c"># -*- coding:utf-8 -*-# -*- coding:utf-8 -*-</span>
+<span class="c">#</span>
+<span class="c"># This file is part of OpenFisca.</span>
+<span class="c"># OpenFisca is a socio-fiscal microsimulation software</span>
+<span class="c"># Copyright © 2011 Clément Schaff, Mahdi Ben Jelloul</span>
+<span class="c"># Licensed under the terms of the GVPLv3 or later license</span>
+<span class="c"># (see openfisca/__init__.py for details)</span>
+
+
+<span class="c"># Exemple of a simple simulation</span>
+
+<span class="kn">from</span> <span class="nn">src.lib.simulation</span> <span class="kn">import</span> <span class="n">ScenarioSimulation</span> 
+
+<span class="kn">from</span> <span class="nn">src.lib.simulation</span> <span class="kn">import</span> <span class="n">SurveySimulation</span> 
+<span class="kn">from</span> <span class="nn">src.plugins.survey.aggregates</span> <span class="kn">import</span> <span class="n">Aggregates</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">ExcelWriter</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+
+
+<span class="n">country</span> <span class="o">=</span> <span class="s">&#39;france&#39;</span>
+<span class="c"># destination_dir = &quot;c:/users/utilisateur/documents/&quot;</span>
+<span class="c"># fname_all = &quot;aggregates_inflated_loyers.xlsx&quot;</span>
+<span class="c"># fname_all = os.path.join(destination_dir, fname_all)              </span>
+
+
+
+<span class="k">def</span> <span class="nf">test_case</span><span class="p">():</span>
+    <span class="n">yr</span> <span class="o">=</span> <span class="mi">2009</span>
+    <span class="n">country</span> <span class="o">=</span> <span class="s">&#39;france&#39;</span>
+
+    <span class="n">simulation</span> <span class="o">=</span> <span class="n">ScenarioSimulation</span><span class="p">()</span>
+    <span class="n">simulation</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">year</span> <span class="o">=</span> <span class="n">yr</span><span class="p">,</span> <span class="n">country</span> <span class="o">=</span> <span class="n">country</span><span class="p">,</span> 
+                    <span class="n">nmen</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">maxrev</span> <span class="o">=</span> <span class="mi">100000</span><span class="p">,</span> <span class="n">xaxis</span> <span class="o">=</span> <span class="s">&#39;sali&#39;</span><span class="p">)</span>
+    <span class="c"># Adding a husband/wife on the same tax sheet (foyer)</span>
+    <span class="n">simulation</span><span class="o">.</span><span class="n">scenario</span><span class="o">.</span><span class="n">addIndiv</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">1975</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">(),</span> <span class="s">&#39;conj&#39;</span><span class="p">,</span> <span class="s">&#39;part&#39;</span><span class="p">)</span> 
+    <span class="n">simulation</span><span class="o">.</span><span class="n">set_param</span><span class="p">()</span>
+
+    <span class="c"># A the aefa prestation can be disabled by uncommenting the following line</span>
+    <span class="c"># simulation.disable_prestations( [&#39;aefa&#39;])</span>
+    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">get_results_dataframe</span><span class="p">()</span>
+
+    <span class="k">print</span> <span class="n">df</span><span class="o">.</span><span class="n">to_string</span><span class="p">()</span>
+
+    <span class="c"># Save example to excel</span>
+    <span class="c"># destination_dir = &quot;c:/users/utilisateur/documents/&quot;</span>
+    <span class="c"># fname = &quot;Example_%s.%s&quot; %(str(yr), &quot;xls&quot;)    </span>
+    <span class="c"># df.to_excel(destination_dir = &quot;c:/users/utilisateur/documents/&quot; + fname)</span>
+
+
+<span class="k">def</span> <span class="nf">survey_case</span><span class="p">():</span>
+    
+    <span class="n">year</span> <span class="o">=</span> <span class="mi">2009</span> 
+    <span class="n">yr</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
+<span class="c">#        fname = &quot;Agg_%s.%s&quot; %(str(yr), &quot;xls&quot;)</span>
+    <span class="n">simulation</span> <span class="o">=</span> <span class="n">SurveySimulation</span><span class="p">()</span>
+    <span class="n">simulation</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">year</span> <span class="o">=</span> <span class="n">yr</span><span class="p">,</span> <span class="n">country</span> <span class="o">=</span> <span class="n">country</span><span class="p">)</span>
+    <span class="n">simulation</span><span class="o">.</span><span class="n">set_param</span><span class="p">()</span>
+    <span class="n">simulation</span><span class="o">.</span><span class="n">set_survey</span><span class="p">()</span>
+
+<span class="c">#    Ignore this</span>
+<span class="c">#    inflator = get_loyer_inflator(year)</span>
+<span class="c">#    simulation.inflate_survey({&#39;loyer&#39; : inflator})</span>
+
+    <span class="n">simulation</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+    
+
+<span class="c"># Compute aggregates</span>
+    <span class="n">agg</span> <span class="o">=</span> <span class="n">Aggregates</span><span class="p">()</span>
+    <span class="n">agg</span><span class="o">.</span><span class="n">set_simulation</span><span class="p">(</span><span class="n">simulation</span><span class="p">)</span>
+    <span class="n">agg</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+    
+    <span class="n">df1</span> <span class="o">=</span> <span class="n">agg</span><span class="o">.</span><span class="n">aggr_frame</span>
+    <span class="k">print</span> <span class="n">df1</span><span class="o">.</span><span class="n">to_string</span><span class="p">()</span>
+    
+<span class="c">#    Saving aggregates</span>
+<span class="c">#    if writer is None:</span>
+<span class="c">#        writer = ExcelWriter(str(fname)</span>
+<span class="c">#    agg.aggr_frame.to_excel(writer, yr, index= False, header= True)</span>
+
+
+<span class="c"># Displaying a pivot table    </span>
+    <span class="kn">from</span> <span class="nn">src.plugins.survey.distribution</span> <span class="kn">import</span> <span class="n">OpenfiscaPivotTable</span>
+    <span class="n">pivot_table</span> <span class="o">=</span> <span class="n">OpenfiscaPivotTable</span><span class="p">()</span>
+    <span class="n">pivot_table</span><span class="o">.</span><span class="n">set_simulation</span><span class="p">(</span><span class="n">simulation</span><span class="p">)</span>
+    <span class="n">df2</span> <span class="o">=</span> <span class="n">pivot_table</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">by</span> <span class="o">=</span><span class="s">&#39;so&#39;</span><span class="p">,</span> <span class="nb">vars</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;nivvie&#39;</span><span class="p">])</span> 
+    <span class="k">print</span> <span class="n">df2</span><span class="o">.</span><span class="n">to_string</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+
+<span class="c">#    test_case()</span>
+     <span class="n">survey_case</span><span class="p">()</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="classe-dediee-aux-cas-type">
+<h2>Classe dédiee aux cas type<a class="headerlink" href="#classe-dediee-aux-cas-type" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="src.lib.simulation.ScenarioSimulation">
+<em class="property">class </em><tt class="descclassname">src.lib.simulation.</tt><tt class="descname">ScenarioSimulation</tt><a class="headerlink" href="#src.lib.simulation.ScenarioSimulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Simulation class tailored to deal with scenarios</p>
+<dl class="method">
+<dt id="src.lib.simulation.ScenarioSimulation.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="headerlink" href="#src.lib.simulation.ScenarioSimulation.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear the outputs table</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.lib.simulation.ScenarioSimulation.compute">
+<tt class="descname">compute</tt><big>(</big><em>difference=True</em><big>)</big><a class="headerlink" href="#src.lib.simulation.ScenarioSimulation.compute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes output_data for the ScenarioSimulation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>difference</strong> : boolean, default True</p>
+<blockquote>
+<div><p>When in reform mode, compute the difference between actual and default</p>
+</div></blockquote>
+<p><strong>Returns</strong> :</p>
+<p><strong>&#8212;&#8212;-</strong> :</p>
+<p class="last"><strong>data, data_default</strong> : Computed data and possibly data_default according to totaux_file</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.lib.simulation.ScenarioSimulation.create_description">
+<tt class="descname">create_description</tt><big>(</big><big>)</big><a class="headerlink" href="#src.lib.simulation.ScenarioSimulation.create_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a description dataframe of the ScenarioSimulation</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.lib.simulation.ScenarioSimulation.disable_prestations">
+<tt class="descname">disable_prestations</tt><big>(</big><em>disabled_prestations=None</em><big>)</big><a class="headerlink" href="#src.lib.simulation.ScenarioSimulation.disable_prestations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable some prestations that will remain to their default value</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>disabled_prestations</strong> : list of strings, default None</p>
+<blockquote class="last">
+<div><p>names of the prestations to be disabled</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.lib.simulation.ScenarioSimulation.draw_bareme">
+<tt class="descname">draw_bareme</tt><big>(</big><em>ax</em>, <em>graph_xaxis=None</em>, <em>legend=False</em>, <em>position=1</em><big>)</big><a class="headerlink" href="#src.lib.simulation.ScenarioSimulation.draw_bareme" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws a bareme on matplotlib.axes.Axes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.lib.simulation.ScenarioSimulation.draw_taux">
+<tt class="descname">draw_taux</tt><big>(</big><em>ax</em>, <em>graph_xaxis=None</em>, <em>legend=True</em><big>)</big><a class="headerlink" href="#src.lib.simulation.ScenarioSimulation.draw_taux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws a bareme on matplotlib.axes.Axes object ax</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.lib.simulation.ScenarioSimulation.get_results_dataframe">
+<tt class="descname">get_results_dataframe</tt><big>(</big><em>default=False</em>, <em>difference=True</em>, <em>index_by_code=False</em><big>)</big><a class="headerlink" href="#src.lib.simulation.ScenarioSimulation.get_results_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats data into a dataframe</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>default</strong> : boolean, default False</p>
+<blockquote>
+<div><p>If True compute the default results</p>
+</div></blockquote>
+<p><strong>difference</strong> :  boolean, default True</p>
+<blockquote>
+<div><p>If True compute the default results</p>
+</div></blockquote>
+<p><strong>index_by_code</strong> : boolean, default False</p>
+<blockquote>
+<div><p>Index the row by the code instead of name of the different element
+of totaux_file</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first last"><strong>df</strong> : A DataFrame with computed data according to totaux_file</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.lib.simulation.ScenarioSimulation.preproc_alter_scenario">
+<tt class="descname">preproc_alter_scenario</tt><big>(</big><em>input_table_alter</em>, <em>input_table</em><big>)</big><a class="headerlink" href="#src.lib.simulation.ScenarioSimulation.preproc_alter_scenario" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare the output values according to the ModelSF definitions and 
+input_table when an alternative scenario is present</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>input_table_alter</strong> : TODO: complete</p>
+<p class="last"><strong>input_table</strong> : TODO: complete</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.lib.simulation.ScenarioSimulation.reset_scenario">
+<tt class="descname">reset_scenario</tt><big>(</big><big>)</big><a class="headerlink" href="#src.lib.simulation.ScenarioSimulation.reset_scenario" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset scenario and alternative_scenario to their default values</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.lib.simulation.ScenarioSimulation.set_alternative_scenario">
+<tt class="descname">set_alternative_scenario</tt><big>(</big><em>scenario</em><big>)</big><a class="headerlink" href="#src.lib.simulation.ScenarioSimulation.set_alternative_scenario" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set alternative-scenario</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><strong>scenario</strong> : an instance of the class Scenario</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.lib.simulation.ScenarioSimulation.set_config">
+<tt class="descname">set_config</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#src.lib.simulation.ScenarioSimulation.set_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configures the ScenarioSimulation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>scenario</strong> : a scenario (by default, None selects Scenario())</p>
+<p><strong>country</strong> : a string containing the name of the country</p>
+<p><strong>param_file</strong> : the socio-fiscal parameters file</p>
+<p><strong>totaux_file</strong> : the totaux file</p>
+<p><strong>xaxis</strong> : the revenue category along which revenue varies</p>
+<p><strong>maxrev</strong> : the maximal value of the revenue</p>
+<p><strong>same_rev_couple</strong> : divide the revenue equally between the two partners</p>
+<p class="last"><strong>mode</strong> : &#8216;bareme&#8217; or &#8216;castype&#8217; TODO: change this</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.lib.simulation.ScenarioSimulation.set_marginal_alternative_scenario">
+<tt class="descname">set_marginal_alternative_scenario</tt><big>(</big><em>entity=None</em>, <em>id_in_entity=None</em>, <em>variable=None</em>, <em>value=None</em><big>)</big><a class="headerlink" href="#src.lib.simulation.ScenarioSimulation.set_marginal_alternative_scenario" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modifies scenario by changing the setting value of the variable of the individual with 
+position &#8216;id&#8217; if necessary in entity named &#8216;entity&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="src.lib.simulation.ScenarioSimulation.set_param">
+<tt class="descname">set_param</tt><big>(</big><em>param=None</em>, <em>param_default=None</em><big>)</big><a class="headerlink" href="#src.lib.simulation.ScenarioSimulation.set_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of the simulation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>param</strong> : a socio-fiscal parameter object to be used in the microsimulation.</p>
+<blockquote>
+<div><p>By default, the method uses the one provided by the attribute param_file</p>
+</div></blockquote>
+<p><strong>param_default</strong> : a socio-fiscal parameter object to be used</p>
+<blockquote class="last">
+<div><p>in the microsimulation to compute some gross quantities not available in the initial data. 
+parma_default is necessarily different from param when examining a reform</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+        </div>
+        <div class="sidebar">
+          <h3>Table Of Contents</h3>
+          <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="whatsnew.html">What&#8217;s New</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Cas Type</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#exemple">Exemple</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#classe-dediee-aux-cas-type">Classe dédiee aux cas type</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="survey.html">Microsimulation à partir de données d&#8217;enquête</a></li>
+<li class="toctree-l1"><a class="reference internal" href="france.html">France</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Participer au développement d&#8217;OpenFisca</a></li>
+</ul>
+
+          <h3 style="margin-top: 1.5em;">Search</h3>
+          <form class="search" action="search.html" method="get">
+            <input type="text" name="q" />
+            <input type="submit" value="Go" />
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+          </form>
+          <p class="searchtip" style="font-size: 90%">
+            Enter search terms or a module, class or function name.
+          </p>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <a href="overview.html" title="Overview"
+             >previous</a> |
+          <a href="survey.html" title="Microsimulation à partir de données d’enquête"
+             >next</a> |
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="genindex.html" title="General Index"
+             >index</a>
+            <br/>
+            <a href="_sources/testcase.txt"
+               rel="nofollow">Show Source</a>
+        </div>
+
+        <div class="right">
+          
+    <div class="footer">
+        &copy; Copyright 2012, Mahdi Ben Jelloul, Clément Schaff.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+  </body>
+</html>

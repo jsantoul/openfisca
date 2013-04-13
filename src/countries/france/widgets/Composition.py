@@ -57,13 +57,13 @@ class CompositionWidget(OpenfiscaPluginWidget, Ui_Menage):
     sig_option_changed = Signal(str, object)
 
 
-    def __init__(self, simulation_scenario = None, parent = None):
+    def __init__(self, simulation = None, parent = None):
         super(CompositionWidget, self).__init__(parent)
         self.setupUi(self)
         if parent is not None:
             self.parent = parent
-        if simulation_scenario is not None:
-            self.set_scenario(simulation_scenario)
+        if simulation is not None:
+            self.set_simulation(simulation)
 
         self.setLayout(self.verticalLayout)
         # Initialize xaxes
@@ -107,7 +107,7 @@ class CompositionWidget(OpenfiscaPluginWidget, Ui_Menage):
         
     #------ Public API ---------------------------------------------    
 
-    def set_scenario(self, simulation):
+    def set_simulation(self, simulation):
         """
         Set scenario_simualtion
         """
@@ -456,8 +456,10 @@ class CompositionWidget(OpenfiscaPluginWidget, Ui_Menage):
         # If it is consistent starts the computation
  
         self.action_compute.setEnabled(False)
+
         P, P_default = self.main.parameters.getParam(), self.main.parameters.getParam(defaut = True)
         self.simulation.set_param(P, P_default)
+        
         self.simulation.compute()
         self.main.refresh_test_case_plugins()
         self.ending_long_process( _("Test case results are updated"))
@@ -468,7 +470,6 @@ class CompositionWidget(OpenfiscaPluginWidget, Ui_Menage):
         Toggle reform mode for test case
         '''
         self.simulation.set_config(reforme = reform)
-        self.set_option('reform', reform)
         self.action_compute.setEnabled(True)
     
     def set_single(self, is_single = True):
@@ -511,9 +512,6 @@ class CompositionWidget(OpenfiscaPluginWidget, Ui_Menage):
             for axe in axes:
                 axes_names.append(axe.name)        
             self.xaxis_box.setCurrentIndex(axes_names.index(xaxis))
-
-        if 'reform' in options:
-            self.action_set_reform.setChecked(self.get_option('reform'))
             
     
     #------ OpenfiscaPluginWidget API ---------------------------------------------
@@ -541,16 +539,26 @@ class CompositionWidget(OpenfiscaPluginWidget, Ui_Menage):
         Note: these actions will be enabled when plugin's dockwidget is visible
               and they will be disabled when it's hidden
         """
+        
+        
+        for index, (qobject, context, name, default) in enumerate(self.main.shortcut_data):
+            if context == "Composer":
+                self.main.shortcut_data.pop(index)
+                qobject.deleteLater()
 
+        
         # File menu actions and shortcuts
-        self.open_action = create_action(self, _("&Open..."),
+                        
+        self.open_action = create_action(self, _("&Open composition..."),
                 icon='fileopen.png', tip=_("Open composition file"),
                 triggered=self.load)
         self.register_shortcut(self.open_action, context="Composer",
                                name=_("Open composition file"), default="Ctrl+O")
-        self.save_action = create_action(self, _("&Save"),
+        
+        self.save_action = create_action(self, _("&Save composition"),
                 icon='filesave.png', tip=_("Save current composition"),
                 triggered=self.save)
+
         self.register_shortcut(self.save_action, context="Composer",
                                name=_("Save current composition"), default="Ctrl+S")
 
@@ -558,7 +566,6 @@ class CompositionWidget(OpenfiscaPluginWidget, Ui_Menage):
         self.main.file_menu_actions += self.file_menu_actions
         
         self.action_compute = create_action(self, _('Compute test case'),
-                                                      shortcut = 'F9',
                                                       icon = 'calculator_green.png', 
                                                       triggered = self.compute)
         self.register_shortcut(self.action_compute, 
@@ -590,6 +597,7 @@ class CompositionWidget(OpenfiscaPluginWidget, Ui_Menage):
         """
         Register plugin in OpenFisca's main window
         """
+                        
         self.main.add_dockwidget(self)
         self.action_set_bareme.trigger()
 

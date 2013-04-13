@@ -16,10 +16,10 @@ import os
 import pandas.rpy.common as com
 
 country = 'france'
-destination_dir = "c:/users/utilisateur/documents/"
+destination_dir = "C:/openfisca/output/"
 fname_all = "aggregates_inflated_loyers.xlsx"
 fname_all = os.path.join(destination_dir, fname_all)              
-
+num_output = 100
 
 def get_loyer_inflator(year):
     
@@ -85,34 +85,42 @@ def build_aggregates3():
         agg3.set_simulation(simu)
         agg3.compute()
 #        if writer is None:
-#            writer = ExcelWriter(str(fname_all))       
-#        agg.aggr_frame.to_excel(writer, yr, index= False, header= True)
+#            writer = ExcelWriter(str(fname_all))  
+        fname_all = os.path.join(destination_dir, 'agg3.xlsx') 
+        agg3.aggr_frame.to_excel(fname_all, yr, index= False, header= True)
 
         for ent in ['ind','men','foy','fam']:
-            dir_name = 'M:/Myliam2/output OF/' + ent +'.csv'
+            dir_name = destination_dir + ent +'.csv'
 ##            simu.survey.table3[ent].to_csv(dir_name)
 #            import pdb
 #            pdb.set_trace()
 ##            com.convert_to_r_dataframe
-#            
-#            dir_name = 'T:/Myliam2/output OF/' + 'output_'  + ent +'.csv'
-            simu.outputs.table3[ent][:30].to_csv(dir_name)
+            simu.outputs.table3[ent][:num_output].to_csv(dir_name)
 
         
         deb1 = time.clock()
         simu.set_survey(num_table=1)
+        print "prob compute"
         simu.compute()
         fin1  = time.clock()        
-#        
-#        agg = Aggregates()
-#        agg.set_simulation(simu)
-#        agg.compute()
+        
+        dir_name = destination_dir + 'en1' +'.csv'
+        print "prob output"
+        simu.outputs.table[:num_output].to_csv(dir_name)
+        
+        agg = Aggregates()
+        print "prob set"
+        agg.set_simulation(simu)
+        print "prob compute"
+        agg.compute()
 
 #        if writer is None:
 #            writer = ExcelWriter(str(fname_all))
-#        agg.aggr_frame.to_excel(writer, yr, index= False, header= True)
+        fname_all = os.path.join(destination_dir, 'agg1.xlsx') 
+        print "prob ind"
+        agg.aggr_frame.to_excel(fname_all, yr, index= False, header= True)
         del simu
-#        del agg
+        del agg
         import gc
         gc.collect()
         tot1 += fin1 - deb1

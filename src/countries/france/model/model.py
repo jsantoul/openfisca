@@ -24,7 +24,23 @@ import src.countries.france.model.common as cm
 import src.countries.france.model.calage as cl
 import src.countries.france.model.th as th
 
+from src.lib.columns import IntCol, EnumCol
+from src.countries.france.model.data import QUIFOY, QUIFAM, QUIMEN
+
 class ModelSF(ModelDescription):
+    
+#    #ident
+#    idmen   = IntCol() # 600001, 600002,
+#    idfoy   = IntCol() # idmen + noi du déclarant
+#    idfam   = IntCol() # idmen + noi du chef de famille
+#
+#    quimen  = EnumCol(QUIMEN)
+#    quifoy  = EnumCol(QUIFOY)
+#    quifam  = EnumCol(QUIFAM)
+#    quimen  = EnumCol(QUIMEN,entity='men')
+#    quifoy  = EnumCol(QUIFOY,entity='foy')
+#    quifam  = EnumCol(QUIFAM,entity='fam')   
+#    
     
     mhsup = Prestation(cs._mhsup)
     alv   = Prestation(ir._alv)

@@ -19,7 +19,7 @@ ENFS = [QUIMEN['enf1'], QUIMEN['enf2'], QUIMEN['enf3'], QUIMEN['enf4'], QUIMEN['
 ALL = [x[1] for x in QUIMEN]
         
 
-def _tax_hab(zthabm, aah, aspa, asi, age, isf_tot, rfr, statmarit, nbptr, _P):
+def _tax_hab(zthabm, aah, aspa, asi, age, isf_tot, rfr, statmarit, nbptr, _P , _option = {'statmarit': [CHEF]}):
     '''
     Taxe d'habitation
     'men'

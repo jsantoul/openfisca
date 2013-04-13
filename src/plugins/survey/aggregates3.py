@@ -181,7 +181,6 @@ class Aggregates3(object):
             varcol  = description.get_col(var)            
             entity = varcol._entity
             # amounts and beneficiaries from current data and default data if exists
-            print varcol, entity, var
             data, data_default = simulation.aggregated_by_entity(entity, [var], all_output_vars = False, force_sum = True)
                                                 
             datasets = {'data': data}

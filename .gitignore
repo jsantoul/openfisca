@@ -20,3 +20,6 @@ src/countries/france/data/survey3.h5
 src/countries/france/data/surveyLiam.h5
 src/countries/france/data/survey_sparse.h5
 src/countries/france/data/sources/config.py
+
+output/*.csv
+output/*.xlsx

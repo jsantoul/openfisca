@@ -32,8 +32,7 @@ table[ent] = store[str(base)]
 years = np.unique(table[ent]['period'].values)
 # rename variables to make them OF ones
 table[ent] = table[ent].rename(columns={'res': 'idmen', 'quires': 'quimen', 'foy': 'idfoy'})
-table[ent]['quimen'] = table[ent]['quimen'] - 1
-table[ent]['quifoy'] = table[ent]['quifoy'] - 1
+
 # create fam base
 table[ent][['idfam','quifam']] = table[ent][['idmen','quimen']]
 # save information on qui == 0
@@ -51,6 +50,34 @@ for nom in ('menage','declar','fam'):
         table[ent] = store[str(base)].rename(columns={'id': ident})
         table[ent] = merge(table[ent], eval(ent +'0'), how='left', left_on=[ident,'period'], right_on=[ident,'period'])
                    
+# test sur le nombre de qui ==0
+test = {}
+for year in [2010]:
+    for nom in ('menage','declar'):
+        ent = name_convertion[nom] 
+        base = 'entities/'+nom
+        ident = 'id'+ent
+        print ent, base, ident
+        test[ent] = store[str(base)].rename(columns={'id': ident})
+        test[ent] = test[ent].ix[table[ent]['period']==year]
+        
+        test0 = eval(ent +'0')[eval(ent +'0')['period']==year]
+        
+        tab = table[ent].ix[table[ent]['period']==year,['id','id'+ent,'idfam']]
+        ind = table['ind'].ix[table['ind']['period']==year,['qui'+ent]] 
+        list_ind =  ind[ind==0]
+        
+        
+        lidmen = test[ent]['idmen']
+        lidmenU = np.unique(lidmen)
+        diff1 = set(test0['idmen']).symmetric_difference(lidmenU)
+        
+        for k in diff1: print k; break
+        import pandas as pd            
+        pd.set_printoptions(max_columns=30)
+        print table['ind'][table['ind']['idmen']==k]
+        pdb.set_trace()   
+        
             
 for year in years:
     goal.remove('survey_'+str(year))
@@ -58,6 +85,17 @@ for year in years:
         tab = table[ent].ix[table[ent]['period']==year]
         key = 'survey_'+str(year) + '/'+ent     
         goal.put(key, tab) 
+    if year == 2010:
+        pdb.set_trace()
+        tab = table[ent].ix[table[ent]['period']==year]
+        tab[:5]
+        len(tab['idfam'])
+        len(np.unique(tab['idfam']))
+        list_qui = tab['idfam']
+        double = list_qui.value_counts()[list_qui.value_counts()>1]
+        tabind = table['ind'].ix[table['ind']['period']==year]
+        
+        
 store.close()
 goal.close()
 

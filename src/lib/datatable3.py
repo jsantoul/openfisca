@@ -183,7 +183,6 @@ class DataTable3(object):
                 try:   
                     self.table3[ent][col.name] = self.table3[ent][col.name].astype(col._dtype)
                 except:
-                    pdb.set_trace()
                     raise Exception("Impossible de lire la variable suivante issue des données d'enquête :\n %s \n  " %col.name) 
         if ent == 'foy':
             self.table3[ent] = self.table3[ent].to_sparse(fill_value=0)   
@@ -242,7 +241,9 @@ class DataTable3(object):
         opt : dict
              dict with the id of the person for which you want the value in entity
             - if opt is None, returns the value for the person 0 (i.e. 'vous' for 'foy', 'chef' for 'fam', 'pref' for 'men' in the "france" case)
-            - if opt is not None, return a dict with key 'person' and values for this person in each entity
+            - if length opt is one, returns the value for that person
+            - if opt is not None and its length is more than one, return a dict with key 'person' and values for this person in each entity
+            
         
         Returns
         -------
@@ -332,12 +333,15 @@ class DataTable3(object):
                 temp[idx['idxUnit']] = var[idx_from]
                 out[person] = temp         
             if sum_ is False:
-                return out
+                if len(opt) == 1:
+                    return out[opt[0]]
+                else:
+                    return out
             else:
                 sumout = 0
                 for val in out.itervalues():
                     sumout += val
-                return sumout           
+                return sumout       
         return var
     
     
@@ -464,8 +468,9 @@ class SystemSf3(DataTable3):
             dct[dent][col.name] = np.ones(size, dtyp)*dflt
                
         for ent in self.list_entities:
+            
             self.table3[ent] = DataFrame(dct[ent]) 
-
+            
         
         # Preprocess the input data according to country specification
         if country is None:
@@ -540,5 +545,8 @@ class SystemSf3(DataTable3):
         provided = set(funcArgs.keys())        
         if provided != required:
             raise Exception('%s missing: %s needs %s but only %s were provided' % (str(list(required - provided)), self._name, str(list(required)), str(list(provided))))
+            
+            
+            
         self.set_value(varname, col._func(**funcArgs), ent)
         col._isCalculated = True

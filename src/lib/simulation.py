@@ -164,6 +164,7 @@ class Simulation(object):
                 output_default.set_inputs(input_table, country = self.country)
             else:
                 output_default = output
+
     
         output.disable(self.disabled_prestations)
         output_default.disable(self.disabled_prestations)

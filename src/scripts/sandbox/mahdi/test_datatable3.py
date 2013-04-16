@@ -16,8 +16,7 @@ import os
 from src.countries.france.data.sources.config import destination_dir
 country = 'france'
 
-fname_all = "aggregates_inflated_loyers.xlsx"
-fname_all = os.path.join(destination_dir, fname_all)              
+
 num_output = 100
 
 def build_aggregates3():
@@ -40,6 +39,9 @@ def build_aggregates3():
         simu.compute()
         fin3  = time.clock()
         
+        print "coucou"
+        col = simu.survey.description.get_col("so")
+        print col.entity
         agg3 = Aggregates3()
         agg3.set_simulation(simu)
         agg3.compute()
@@ -88,3 +90,8 @@ def build_aggregates3():
         print "Time to process 3 table :" +str(fin3 - deb3)
     print tot1, tot3, tot3- tot1
 #    writer.save()
+
+
+if __name__ == '__main__':
+
+    build_aggregates3()

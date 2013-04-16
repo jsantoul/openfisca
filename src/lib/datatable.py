@@ -189,7 +189,7 @@ class DataTable(object):
             messagef = ""
             messageb = ""
             missing_col.sort()
-            
+
             for var in missing_col:
                 if var[0] == 'f':
                     messagef += '  - '+ var +'\n'
@@ -198,7 +198,7 @@ class DataTable(object):
                 else:
                     message += '  - '+ var +'\n'
             print Warning(message + messagef + messageb)
-            
+
         for var in INDEX:
             if ('id' + var) in missing_col:
                 raise Exception('Survey data needs variable %s' % ('id' + var))

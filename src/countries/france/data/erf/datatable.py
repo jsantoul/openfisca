@@ -42,91 +42,43 @@ class ErfsDataTable(object):
                
         """
         tables = {}
-
-                
         if self.year is not None:        
             year = self.year
-            print "creating erf_menage"
-            menageXX = "menage" + str(year)[2:]
-            erf_menageRdata = menageXX + ".Rdata"
-            erf_filename = os.path.join(os.path.dirname(DATA_DIR),'R','erf', str(year), erf_menageRdata)
-            rpy.r.load(erf_filename)
-            erf_menage = com.load_data(menageXX)
-            tables["erf_menage"] = erf_menage
-
+        else:
+            raise Exception("year should be defined")
+        
+        # erf menage
+        menageXX = "menage" + str(year)[2:]
+        # eec menage
+        yr = str(year)[2:]
+        eec_df_name = "mrf" + yr + "e" + yr + "t4"
+        # foyer
+        foyerXX = "foyer" + str(year)[2:]
+        # erf_indivi
+        indiviXX = "indivi" + str(year)[2:]
+        # eec_indivi
+        eec_indiviXX = "irf" + yr + "e" + yr + "t4"
+        
+        
+        tables_to_process = {"erf_menage" : menageXX,
+                             "eec_menage" : "mrf" + yr + "e" + yr + "t4",
+                             "foyer" : foyerXX,
+                             "erf_indivi" : indiviXX,
+                             "eec_indivi" : eec_indiviXX}
+        
+        for destination_table_name, R_table_name in tables_to_process.iteritems(): 
             
-            
-            print "creating eec_menage"
-            yr = str(year)[2:]
-            eec_df_name = "mrf" + yr + "e" + yr + "t4"
-            eec_menageRdata = eec_df_name + ".Rdata" 
-            eec_filename = os.path.join(os.path.dirname(DATA_DIR),'R','erf', str(year), eec_menageRdata)
-            rpy.r.load(eec_filename)
-            eec_menage = com.load_data(eec_df_name)
-            tables["eec_menage"] = eec_menage
-            tables["menage"] = erf_menage.merge(eec_menage) 
-            del erf_menage
-            print "step 1"
-                        
+            print "creating %s" %(destination_table_name) 
+            table_Rdata = R_table_name + ".Rdata"
+            filename = os.path.join(os.path.dirname(DATA_DIR),'R','erf', str(year), table_Rdata)
+            rpy.r.load(filename)
+            stored_table = com.load_data(R_table_name)
             store = HDFStore(self.hdf5_filename)
-            store[str(self.year)+"/"+"menage"] = tables["menage"]
-            del tables["menage"]
+            store[str(self.year)+"/"+"destination_table_name"] = stored_table
+            store.close()
+            del stored_table
             gc.collect()
-            
-            print "step 2"
-            store[str(self.year)+"/"+"eec_menage"] = tables["eec_menage"]
-            del eec_menage, tables["menage"]
-            gc.collect()
-            
-            print "step 3"
-            store[str(self.year)+"/"+"erf_menage"] = tables["erf_menage"]
-            del tables["erf_menage"], erf_menage
-            gc.collect()
-            
-            print "creating erf_foyer"
-            foyerXX = "foyer" + str(year)[2:]
-            erf_foyerRdata = foyerXX + ".Rdata"
-            erf_foyer_filename = os.path.join(os.path.dirname(DATA_DIR),'R','erf', str(year), erf_foyerRdata)
-            rpy.r.load(erf_foyer_filename)
-            erf_foyer = com.load_data(foyerXX)
-            tables["foyer"] = erf_foyer
-            
-            store[str(self.year)+"/"+"foyer"] = tables["foyer"]
-            del tables["foyer"]
-            
-            print "creating erf_indivi"
-            indiviXX = "indivi" + str(year)[2:]
-            erf_indiviRdata = indiviXX + ".Rdata"
-            erf_indivi_filename = os.path.join(os.path.dirname(DATA_DIR),'R','erf', str(year), erf_indiviRdata)
-            rpy.r.load(erf_indivi_filename)
-            erf_indivi = com.load_data(indiviXX)
-            tables["erf_indivi"] = erf_indivi
 
-            store[str(self.year)+"/"+"erf_indivi"] = tables["erf_indivi"]
-            del tables["erf_indivi"]
-
-#             TODO: create eec_individu
-#             yr = str(year)[2:] déjà créé
-            print "starting to create eec_indivi"
-            eec_indiviXX = "irf" + yr + "e" + yr + "t4"
-            eec_indiviRdata = eec_indiviXX + ".Rdata" 
-            eec_indivi_filename = os.path.join(os.path.dirname(DATA_DIR),'R','erf', str(year), eec_indiviRdata)
-            rpy.r.load(eec_indivi_filename)
-            eec_indivi = com.load_data(eec_indiviXX)
-            tables["eec_indivi"] = eec_indivi
-            
-            store[str(self.year)+"/"+"eec_indivi"] = tables["eec_indivi"]
-
-                                    
-#             store = HDFStore(self.hdf5_filename)
-#             store[str(self.year)+"/"+table] = tables[table]
-#             for table in tables:
-#                 print table
-#                 store[str(self.year)+"/"+table] = tables[table]
-#                 del table
-#                 gc.collect()
-            
-            
 
     def get_value(self, variable, table=None):
         """

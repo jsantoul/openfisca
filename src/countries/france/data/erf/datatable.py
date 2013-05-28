@@ -115,44 +115,40 @@ class ErfsDataTable(object):
         else:
             raise Exception("year should be defined")
         
-        def get_survey_year(survey_name, year):
-            if survey_name == "logement":
-                if year == 2003:
-                    return 2003
-                elif year in range(2006,2010):
-                    return 2006
-            if survey_name == "patrimoine":
-                return 2004
-            else:
-                return year
-
-
-        survey_list = self.get_survey_list(year)
-        store = HDFStore(self.hdf5_filename)
-        print store
-
-
-        for survey in survey_list:    
-            survey_name = survey["name"]
-            data_dir = survey["data_dir"]
-            tables_to_process = survey["tables_to_process"]
+        # erf menage
+        menageXX = "menage" + str(year)[2:]
+        # eec menage
+        yr = str(year)[2:]
+        eec_df_name = "mrf" + yr + "e" + yr + "t4"
+        # foyer
+        foyerXX = "foyer" + str(year)[2:]
+        # erf_indivi
+        indiviXX = "indivi" + str(year)[2:]
+        # eec_indivi
+        eec_indiviXX = "irf" + yr + "e" + yr + "t4"
+        
+        
+        tables_to_process = {
+                            "erf_menage" : menageXX,
+                            "eec_menage" : "mrf" + yr + "e" + yr + "t4",
+                            "foyer" : foyerXX,
+                            "erf_indivi" : indiviXX,
+                              "eec_indivi" : eec_indiviXX,
+                             }
+        
+        for destination_table_name, R_table_name in tables_to_process.iteritems(): 
             
-            
-            for destination_table_name, R_table_name in tables_to_process.iteritems(): 
-                
-                print "creating %s" %(destination_table_name) 
-                table_Rdata = R_table_name + ".Rdata"
-                filename = os.path.join(data_dir, str(get_survey_year(survey_name, year)), table_Rdata)
-                if not os.path.isfile(filename):
-                    raise Exception("filename do  not exists")
-                
-                rpy.r.load(filename)
-                stored_table = com.load_data(R_table_name)
-                store = HDFStore(self.hdf5_filename)
-                store[str(self.year)+"/"+destination_table_name] = stored_table
-                store.close()
-                del stored_table
-                gc.collect()
+            print "creating %s" %(destination_table_name) 
+            table_Rdata = R_table_name + ".Rdata"
+            filename = os.path.join(os.path.dirname(DATA_DIR),'R','erf', str(year), table_Rdata)
+            rpy.r.load(filename)
+            stored_table = com.load_data(R_table_name)
+            store = HDFStore(self.hdf5_filename)
+            store[str(self.year)+"/"+destination_table_name] = stored_table
+            store.close()
+            del stored_table
+            gc.collect()
+
 
 
     def get_value(self, variable, table=None):

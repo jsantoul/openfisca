@@ -6,10 +6,12 @@
 # Licensed under the terms of the GVPLv3 or later license
 # (see openfisca/__init__.py for details)
 
-from numpy import where, NaN, random
+from __future__ import division
+from numpy import where, NaN, random, logical_or as or_ 
 from src.countries.france.data.erf.build_survey import show_temp, load_temp, save_temp
+from src.countries.france.data.erf.build_survey.utilitaries import print_id, control
 from numpy import logical_and as and_
-from pandas import read_csv
+from pandas import read_csv, concat
 
 
 def final(year=2006):
@@ -177,7 +179,11 @@ def final(year=2006):
 # loyersMenages <- menagem[,available_vars]
 # 
     all_vars = vars + famille_vars
-    available_vars = list( set(all_vars).intersection_update(set(menagem.columns)))
+    
+    print all_vars
+    print  set(menagem.columns)
+    available_vars = list( set(all_vars).intersection(set(menagem.columns)))
+    
     loyersMenages = menagem.xs(available_vars,axis=1)
 
 
@@ -218,11 +224,12 @@ def final(year=2006):
 # loyersMenages[loyersMenages$ddipl>1, "ddipl"] <- loyersMenages$ddipl[loyersMenages$ddipl>1]-1
 # 
 
-    loyersMenages.ddipl.astype("int32")
+
     loyersMenages.ddipl = where(loyersMenages.ddipl.isnull(), 7, loyersMenages.ddipl)
     loyersMenages.ddipl = where(loyersMenages.ddipl>1, 
                                 loyersMenages.ddipl-1,
                                 loyersMenages.ddipl)
+    loyersMenages.ddipl.astype("int32")
 # 
 # table(final$actrec,useNA="ifany")
 # final$act5 <- NA    
@@ -238,7 +245,7 @@ def final(year=2006):
 # 
 
 
-    final.act5 <- NaN    
+    final.act5 = NaN    
 
     final.act5 = where(final.actrec==1, 2, final.act5) # indépendants
     final.act5 = where(final.actrec.isin([2,3]), 1, final.act5)  # salariés
@@ -304,18 +311,19 @@ def final(year=2006):
 # }
 # 
 
-    apl_imp = read_csv("../zone_apl/zone_apl_imputation_data.csv")
+    apl_imp = read_csv("../../zone_apl/zone_apl_imputation_data.csv")
 
+    print apl_imp.head(10)
     if year == 2008:
         zone_apl = final2.xs(["tu99", "pol99", "reg"], axis=1)
     else:
         zone_apl = final2.xs(["tu99", "pol99", "tau99", "reg"], axis=1)
-
+        
     for i in range(len(apl_imp["TU99"])):
-        tu = apl_imp.iloc[i,"TU99"]
-        pol = apl_imp.iloc[i,"POL99"]
-        tau = apl_imp.iloc[i,"TAU99"]
-        reg = apl_imp.iloc[i,"REG"]
+        tu = apl_imp["TU99"][i]
+        pol = apl_imp["POL99"][i]
+        tau = apl_imp["TAU99"][i]
+        reg = apl_imp["REG"][i]
 
     if year == 2008:
         indices = and_(and_(final2["tu99"] == tu, final2["pol99"] == pol),
@@ -329,12 +337,32 @@ def final(year=2006):
                          and_(apl_imp["TAU99"] == tau, apl_imp["REG"] == reg))
     
     z = random.uniform(size=indices.sum())
+    print len(z)
+    print len(indices)
+
+    print len(indices)/len(z)
     probs = apl_imp.loc[selection , ["proba_zone1", "proba_zone2"]]
-    final2.loc[indices,"zone_apl"] = ( 1 + (z>probs['proba_zone1']) +
-                                       (z>(probs['proba_zone1'] + probs['proba_zone2']))) 
+    print probs
+    print probs['proba_zone1'].values
+
+    proba_zone_1 =  probs['proba_zone1'].values[0]
+    proba_zone_2 =  probs['proba_zone2'].values[0]
+    
+    final2["zone_apl"] = 3
+    final2["zone_apl"][indices] = ( 1 + (z>proba_zone_1) +
+                                       (z>(proba_zone_1 + proba_zone_2))) 
     del indices, probs
-
-
+    
+#     control(final2, verbose=True, debug=True, verbose_length=15)
+    
+    print final2[final2['sali'].isnull()].head(15).to_string()
+    print len(final2[final2['sali'].isnull()])
+#     columns_w_nan = []
+#     for col in final2.columns:
+#         if final2[final2['idfoy'].notnull()][col].isnull().any() and not final2[col].isnull().all():
+#             columns_w_nan.append(col)
+#     print columns_w_nan
+#    return
 # 
 # # var <- names(foyer)
 # #a1 <- c('f7rb', 'f7ra', 'f7gx', 'f2aa', 'f7gt', 'f2an', 'f2am', 'f7gw', 'f7gs', 'f8td', 'f7nz', 'f1br', 'f7jy', 'f7cu', 'f7xi', 'f7xo', 'f7xn', 'f7xw', 'f7xy', 'f6hj', 'f7qt', 'f7ql', 'f7qm', 'f7qd', 'f7qb', 'f7qc', 'f1ar', 'f7my', 'f3vv', 'f3vu', 'f3vt', 'f7gu', 'f3vd', 'f2al', 'f2bh', 'f7fm', 'f8uy', 'f7td', 'f7gv', 'f7is', 'f7iy', 'f7il', 'f7im', 'f7ij', 'f7ik', 'f1er', 'f7wl', 'f7wk', 'f7we', 'f6eh', 'f7la', 'f7uh', 'f7ly', 'f8wy', 'f8wx', 'f8wv', 'f7sb', 'f7sc', 'f7sd', 'f7se', 'f7sf', 'f7sh', 'f7si',  'f1dr', 'f7hs', 'f7hr', 'f7hy', 'f7hk', 'f7hj', 'f7hm', 'f7hl', 'f7ho', 'f7hn', 'f4gc', 'f4gb', 'f4ga', 'f4gg', 'f4gf', 'f4ge', 'f7vz', 'f7vy', 'f7vx', 'f7vw', 'f7xe', 'f6aa', 'f1cr', 'f7ka', 'f7ky', 'f7db', 'f7dq', 'f2da')
@@ -349,6 +377,14 @@ def final(year=2006):
 # 
 # saveTmp(final2, file= "final2.Rdata")
 
+    print_id(final2)
+    from pandas import HDFStore
+    from src.countries.france import DATA_SOURCES_DIR
+    import os
+    test_filename = os.path.join(DATA_SOURCES_DIR,"test.h5") 
+    store = HDFStore(test_filename)
+    store['survey_'+ str(year)]  = final2
+    
 if __name__ == '__main__':
 
     final()

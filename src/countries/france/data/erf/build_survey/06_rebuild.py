@@ -13,7 +13,7 @@ import gc
 
 from src.countries.france.data.erf.datatable import DataCollection
 from src.countries.france.data.erf.build_survey import show_temp, load_temp, save_temp
-from src.countries.france.data.erf.build_survey.utilitaries import print_id
+from src.countries.france.data.erf.build_survey.utilitaries import print_id, control
 
 ## On part de la table individu de l'ERFS
 ## on renomme les variables
@@ -625,7 +625,7 @@ def create_totals(year=2006):
     
     indivi['titc'][indivi['titc'].isnull()] = 0
 #    print indivi['titc'].isnull().value_counts()
-    assert indivi['titc'].notnull().all() , "Problème avec les titc"
+    assert indivi['titc'].notnull().all() , Exception("Problème avec les titc")
     
 ## STATUT
 ## Statut détaillé mis en cohérence avec la profession
@@ -674,7 +674,7 @@ def create_totals(year=2006):
     indivi['statut'][indivi['statut']==44] = 10
     indivi['statut'][indivi['statut']==45] = 11
     #print indivi['statut'].value_counts()
-    assert indivi['statut'].isin(range(12)).all(), "statut value over range"
+    assert indivi['statut'].isin(range(12)).all(), Exception("statut value over range")
     
 ##TXTPPB
 ## Sans objet (ACTOP='2') ou non renseigné
@@ -709,11 +709,10 @@ def create_totals(year=2006):
 #})
 #table(indivi$nbsala,useNA='ifany')
 
-    indivi['txtppb'][indivi['txtppb'].isnull()] = 0
-    
+    indivi['txtppb'].fillna(0)
     assert indivi['txtppb'].notnull().all()
     
-    indivi['nbsala'][indivi['nbsala'].isnull()] = 0
+    indivi['nbsala'].fillna(0)
     indivi['nbsala'] = indivi['nbsala'].astype('int')
     indivi['nbsala'][indivi['nbsala']==99] = 10
     print indivi['nbsala'].value_counts()
@@ -808,13 +807,11 @@ def create_totals(year=2006):
 #saveTmp(indivi, file= "indivi.Rdata")
     print "on vérifie qu'il ne manque pas d'info sur les liens avec la personne de référence"
     
-    print_id(indivi) 
-    
-
+    control(indivi, debug=True, verbose=True, verbose_columns=['idfoy', 'quifoy'], verbose_length=1)
     
     #On crée les n° de personnes à charge
     assert indivi['idfoy'].notnull().all()
-    
+    print_id(indivi)
     indivi['quifoy'][indivi['quifoy']=='vous'] = 0
     indivi['quifoy'][indivi['quifoy']=='conj'] = 1
     indivi['quifoy'][indivi['quifoy']=='pac'] = 2
@@ -830,7 +827,8 @@ def create_totals(year=2006):
     #indivi['quifoy'] = indivi['quifoy'].astype('str')
     indivi.update(test2)
     del test2, fip 
-    print_id(indivi)
+    control(indivi, debug=True, verbose=True, verbose_columns=['idfoy', 'quifoy'], verbose_length=0)
+    
     
 #####################################################################################
 ## On ajoute les idfam et quifam
@@ -859,28 +857,50 @@ def create_totals(year=2006):
 #
     print 'création des fichiers globaux'
     famille = load_temp(name='famc', year=year)
-    print_id(famille)
+#     print_id(famille)
     tot2 = indivi.merge(famille, on='noindiv', how='outer')
     del famille
     # TODO: MBJ increase in number of menage/foyer when merging with family ...
     print_id(tot2)
     assert tot2['quifam'].notnull().all()
     
-    print_id(tot2)
+#     control(tot2, debug=True, verbose=True, verbose_columns=['idfoy', 'quifoy'], verbose_length=15)
+    print len(tot2.loc[and_(tot2.duplicated(['quifoy', 'idfoy']),tot2['quifoy']==1)])
     
+
     save_temp(tot2, name='tot2', year=year)
     del indivi
     print show_temp()
     #On combine les variables de revenu
     foyer = load_temp(name='foy_ind', year=year)
-    print foyer.describe()
-    tot3 = tot2.merge(foyer, how='outer')
-    tot3.drop_duplicates(cols='noindiv', take_last='true', inplace=True)
-    print tot3.duplicated(cols='noindiv').sum()
-    print tot3.duplicated(cols='noindiv').any()
+
+    print '____contrôle_____ foyer'
+    print control(foyer, debug=True) #Colonne frag_pvce
+    print control(foyer, verbose_columns=['sali'], debug=True, verbose=True) #Colonne frag_pvce
+    
+    print foyer["quifoy"].value_counts()
+    
+    tot2.update(foyer)
+    
+    print "tot2"
+    print_id(tot2)
+    tot3 = tot2
+    # TODO: check where they come from
+    tot3 = tot3.drop_duplicates(cols='noindiv')
     
     assert not tot3.duplicated(cols='noindiv').any(), Exception("Duplicates in tot3")
+    
     print_id(tot3)
+
+    print 'TOT3'
+#     print tot3.loc[tot3.duplicated(['idfoy', 'quifoy']), ['idfoy', 'quifoy']].head(20)
+#     print len(tot3[tot3.duplicated(['idfoy', 'quifoy'])])
+    control(tot3, debug=True, verbose=True, verbose_columns=['idfoy', 'quifoy'], verbose_length=5)
+    
+    assert not tot3.duplicated(cols='noindiv').any(), Exception("Duplicates in tot3")
+#     print_id(tot3)
+    print '____contrôle_____ tot3'
+    print control(tot3, debug=True) #Colonne frag_pvce
     
 ## On ajoute les variables individualisables
 #loadTmp("foyer_individualise.Rdata") # foy_ind
@@ -904,14 +924,16 @@ def create_totals(year=2006):
     
     vars2 = set(tot3.columns).difference(set(allvars))
     tot3 = tot3[list(vars2)]
-    print "len tot3"
-    print len(tot3.index)
+#     print "len tot3"
+#     print len(tot3.index)
+    print_id(tot3)
     save_temp(tot3, name='tot3', year=year)
-    print show_temp()
+#     print show_temp()
     print 'tot3 sauvegardé'
+    control(tot3)
     del tot2, allvars, tot3, vars2
     gc.collect()
-    return
+    
 
 def create_final(year=2006):
     print 'création de final'
@@ -920,8 +942,12 @@ def create_final(year=2006):
     print "foy_ind"
     print foy_ind.duplicated(cols=['idfoy', 'quifoy']).any() 
     print "final"
-    print tot3.duplicated(cols=['idfoy', 'quifoy']).any() 
+    print tot3.duplicated(cols=['noindiv']).any(), 'doublon noindiv ?'
+    print tot3.loc[tot3.duplicated(['idfoy', 'quifoy']), ['idfoy', 'quifoy']].head(30)
+    print len(tot3[tot3.duplicated(['idfoy', 'quifoy'])])
+    
     tot3.drop_duplicates(cols=['idfoy', 'quifoy'], inplace=True)
+    print tot3.duplicated(cols=['idfoy', 'quifoy']).any(), 'doublon idfoy, quifoy ?' 
     
     print_id(tot3)
     
@@ -931,7 +957,7 @@ def create_final(year=2006):
     final.reset_index(inplace=True)
     print_id(final)
     print final.duplicated(cols=['idfoy', 'quifoy']).any() 
-    return
+    
     del tot3, foy_ind
     gc.collect()
     
@@ -945,8 +971,9 @@ def create_final(year=2006):
 #gc()
 
     sif = load_temp(name = 'sif', year=year)
-    final = final.merge(sif, on='noindiv', how='outer')
-    print final.describe()
+    final = final.merge(sif, on='noindiv', how='inner')
+    assert set(sif.columns) < set(final.columns)
+    print len(final[final['idfoy'].isnull()])
     save_temp(final, name='final', year=year)
     print 'final sauvegardé'
     del sif, final

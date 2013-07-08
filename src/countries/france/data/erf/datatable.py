@@ -63,32 +63,29 @@ class DataCollection(object):
         Initialize survey data 
         """
         self.initialize_erf()
-#        self.initialize_logement()
+#         self.initialize_logement()
         
-    def initialize_erf(self):
+    def initialize_erf(self, tables=None):
         """
         """
+
         year = self.year
         erf = SurveyDescription()
         yr = str(year)[2:]
         yr1 = str(year+1)[2:]
         erf_tables_to_process = {
-                                 "erf_menage" : "menage" + yr,
+                                "erf_menage" : "menage" + yr,
                                  "eec_menage" : "mrf" + yr + "e" + yr + "t4",
                                  "foyer" : "foyer" + yr,
-                                 "erf_indivi" : "indivi" + yr,
-                                 "eec_indivi" : "irf" + yr + "e" + yr + "t4",
-                                 "eec_cmp_1" : "icomprf" + yr + "e" + yr1 + "t1",
-                                 "eec_cmp_2" : "icomprf" + yr + "e" + yr1 + "t2",
-                                 "eec_cmp_3" : "icomprf" + yr + "e" + yr1 + "t3"
-                                 }
-        
+                                  "erf_indivi" : "indivi" + yr,
+#                                 "eec_indivi" : "irf" + yr + "e" + yr + "t4",
+#                                 "eec_cmp_1" : "icomprf" + yr + "e" + yr1 + "t1",
+#                                 "eec_cmp_2" : "icomprf" + yr + "e" + yr1 + "t2",
+                                "eec_cmp_3" : "icomprf" + yr + "e" + yr1 + "t3"
+                                }      
         RData_dir = os.path.join(os.path.dirname(DATA_DIR),'R','erf')
         
-        for name, RData_filename in erf_tables_to_process.iteritems():
-            erf.insert_table(name=name, 
-                             RData_filename=RData_filename,
-                             RData_dir=RData_dir)
+        
         
         variables = ['noi','noindiv','ident','declar1','quelfic','persfip','declar2','persfipd','wprm',
                      "zsali","zchoi","ztsai","zreti","zperi","zrsti","zalri","zrtoi","zragi","zrici","zrnci",
@@ -98,15 +95,24 @@ class DataCollection(object):
                        'acteu','stc','contra','titc','mrec','forter','rstg','retrai','lpr','cohab','sexe',
                        'agepr','rga','statut', 'txtppb', 'encadr', 'prosa', "nbsala",  "chpub", "dip11"]
      
-        erf_variables_to_fetch = {"erf_indivi": variables,
+        erf_variables_to_fetch = {
+                                     "erf_indivi": variables,
                                   "eec_indivi": variables_eec,
                                   "eec_cmp_1" : variables_eec,
                                   "eec_cmp_2" : variables_eec,
-                                  "eec_cmp_3" : variables_eec,
-                                    }
+                                "eec_cmp_3" : variables_eec,
+                                     }
        
-        for name, vars in erf_variables_to_fetch.iteritems():
-            erf.insert_table(name=name,variables=vars)
+        for name, RData_filename in erf_tables_to_process.iteritems():
+            try:
+                variables = erf_variables_to_fetch[name]
+            except:
+                variables = None
+                
+            erf.insert_table(name=name, 
+                             RData_filename=RData_filename,
+                             RData_dir=RData_dir,
+                             variables=variables)
         
         self.surveys["erf"] = erf
         
@@ -175,11 +181,8 @@ class DataCollection(object):
             raise Exception("year should be defined")
         
         store = HDFStore(self.hdf5_filename)
-        print store
-        
-        
         for survey_name, description in self.surveys.iteritems():
-            for destination_table_name, tables in description.tables.iteritems():
+            for destination_table_name, tables in description.tables.iteritems():  
                 data_dir = tables["RData_dir"]
                 R_table_name = tables["RData_filename"]
                 try:
@@ -336,13 +339,13 @@ class DataCollection(object):
 
         store = HDFStore(self.hdf5_filename)
         df = store[str(self.year)+"/"+table]
+
         # If no variables read the whole table
         if variables is None:
             return df
             
         from src.countries.france.data.erf import get_erf2of, get_of2erf
         of2erf = get_of2erf()
-        print of2erf.keys()
         to_be_renamed_variables = set(of2erf.keys()).intersection(variables)
         renamed_variables = []
 
@@ -350,10 +353,8 @@ class DataCollection(object):
         for variable in to_be_renamed_variables:
             renamed_variables.append(of2erf[variable])
         
-
         if renamed_variables:
             variables = list( set(variables).difference(to_be_renamed_variables)) + renamed_variables 
-
 
 #        if table is None:
 #            for test_table in self.tables.keys:
@@ -401,15 +402,13 @@ def test3():
     simulation = SurveySimulation()
     simulation.set_config(year=year)
     simulation.set_param()
-    simulation.compute()
-    print check_consistency(simulation.input_table, df)
+    simulation.compute() # TODO: this should not be mandatory
+    check_consistency(simulation.input_table, df)
         
 def test_init():
-    for year in range(2006,2007):
+    for year in range(2009,2010):
         data = DataCollection(year=year)
         data.initialize()
-#        print data.surveys["erf"].tables
-#        print data.surveys["lgt"].tables
         data.set_config()
     
 #def test_reading_stata_tables():
@@ -420,13 +419,14 @@ def test_init():
 #    print reader.data()
     
 if __name__ == '__main__':
-    test3()
-    # build_foyer()
-#===============================================================================
-# <<<<<<< HEAD
-#     #test_reading_stata_tables()
-# =======
-# 
-# >>>>>>> a07e793972a5b65256994cb8b1705aa969907df5
-#===============================================================================
-    #test_init()
+#     test3()
+    test_init()
+#     hdf5_filename = os.path.join(os.path.dirname(ERF_HDF5_DATA_DIR),'erf','erf.h5')
+#     print hdf5_filename
+#     store = HDFStore(hdf5_filename)
+#     print store
+#     
+#     hdf5_filename = os.path.join(os.path.dirname(ERF_HDF5_DATA_DIR),'erf','erf_old.h5')
+#     print hdf5_filename
+#     store = HDFStore(hdf5_filename)
+#     print store 

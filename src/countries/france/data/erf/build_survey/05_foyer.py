@@ -30,7 +30,6 @@ from pandas import Series
 from src.countries.france.data.erf.build_survey.utilitaries import print_id
 
 def sif(year=2006):
-    year = 2006
     data = DataCollection(year=year)
     print u"05_foyer: extraction des données foyer"
     ## TODO Comment choisir le rfr n -2 pour éxonération de TH ?
@@ -77,6 +76,14 @@ def sif(year=2006):
     #  sif$sif[sif$noindiv == 900872201] <- new_sif
     #  rm(old_sif,new_sif)
     #}
+    if year == 2009:
+        old_sif = sif['sif'][sif['noindiv'] == 901803201]
+        new_sif = old_sif.str[0:59] + old_sif.str[60:] + "0"
+        sif['sif'][sif['noindiv'] == 901803201] = new_sif
+        old_sif = sif['sif'][sif['noindiv'] == 900872201]
+        new_sif = old_sif.str[0:58] + " " + old_sif.str[58:]
+        sif['sif'][sif['noindiv'] == 900872201] = new_sif
+        del old_sif, new_sif
     #
     #
     ## for (index in 60:80){
@@ -126,7 +133,7 @@ def sif(year=2006):
     sif["caseG"] = sif["sif"].str[17:18] == "G"
     sif["caseK"] = sif["sif"].str[18:19] == "K"
     
-    #  d = 0
+
     d = 0
     #
     #  if (year %in% c(2006,2007)){   
@@ -524,10 +531,8 @@ def foyer_all(year=2006):
     foy_ind['quifoy'][foy_ind['quifoy']=='pac2'] = 3
     foy_ind['quifoy'][foy_ind['quifoy']=='pac3'] = 4
     
-    assert foy_ind['quifoy'].isin(range(5)).all(), 'présence de valuers aberrantes dans quifoy'
-    print foy_ind['quifoy'].value_counts()
-    
-    return
+    assert foy_ind['quifoy'].isin(range(5)).all(), 'présence de valeurs aberrantes dans quifoy'
+
     print 'saving foy_ind'
     print_id(foy_ind)    
     save_temp(foy_ind, name="foy_ind", year = year)
@@ -544,6 +549,6 @@ def foyer_all(year=2006):
 
 
 if __name__ == '__main__':
-    year = 2006
+    year = 2009
     sif(year=year)
-    foyer_all(year=year)
+    #foyer_all(year=year)

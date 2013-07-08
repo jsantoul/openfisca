@@ -113,6 +113,7 @@ def invalide(year = 2006):
 # # foy_inv_pac[is.na(foy_inv_pac$alt),"alt"] <- 0
 # # invalides[!(invalides$quifoy %in% c("vous","conj")),c("noindiv","inv","alt")] <- foy_inv_pac
 
+
     print '    1.3 : enfants invalides et garde alternée'
     
     pacIndiv = load_temp(name='pacIndiv', year=year)
@@ -133,12 +134,21 @@ def invalide(year = 2006):
     foy_inv_pac['type_pac'] = None
     foy_inv_pac['alt'] = foy_inv_pac['alt'].fillna(False)
     
-    print foy_inv_pac.inv.value_counts() # TODO: JS : trop peu de True là-dedans
-    print foy_inv_pac.alt.value_counts() #
 
+    print foy_inv_pac['inv'].describe()
+    invalides['alt'] = 0
+    foy_inv_pac['alt'][foy_inv_pac.alt.isnull()] = 0
+    invalides = invalides.merge(foy_inv_pac, on=["noindiv","inv","alt"])
 
-    print  len(invalides), len(foy_inv_pac)
-    print invalides.inv.value_counts()
+    invalides = invalides.drop_duplicates(['noindiv', 'inv', 'alt'], take_last=True)
+# =======
+#     print foy_inv_pac.inv.value_counts() # TODO: JS : trop peu de True là-dedans
+#     print foy_inv_pac.alt.value_counts() #
+# 
+# 
+#     print  len(invalides), len(foy_inv_pac)
+#     print invalides.inv.value_counts()
+# >>>>>>> 67cd9a43177cf3f6f72521cda59dae02485df1e3
     
     invalides = invalides.merge(foy_inv_pac, on='noindiv', how='left')
     invalides['inv'] = where(invalides['inv_y']==True, invalides['inv_y'], invalides['inv_x'])

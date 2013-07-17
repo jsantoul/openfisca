@@ -36,7 +36,7 @@ def create_indivim(year=2006):
     eecmen = data.get_values(table="eec_menage")
     
     print sorted(eecmen.columns)
-    return
+    
     eecmen["locataire"] = eecmen["so"].isin([3,4,5])
     eecmen["locataire"] = eecmen["locataire"].astype("int32")
     noappar_m = eecmen[ not_(eecmen.ident.isin( erfmen.ident.values))]
@@ -89,13 +89,14 @@ def create_indivim(year=2006):
     
 
     var_list = (['acteu', 'stc', 'contra', 'titc', 'forter', 'mrec', 'rstg', 'retrai', 'lien', 'noicon', 
-                 'noiper', 'noimer', 'naia', 'cohab', 'agepr', 'statut', 'txtppb', 'encadr', 'prosa'])
+                 'noiper', 'noimer', 'naia', 'cohab', 'agepr', 'statut', 'txtppb', 'encadr', 'prosa', 
+                 'rc1rev', 'maahe'])
     
     for var in var_list:
         try:
             indivim[var] = indivim[var].astype("float32")
         except:
-            print "%s is missing" %var
+            print "%s is missing" %(var)
     
     indivim['actrec'] = 0
     indivim['actrec'] = where(indivim['acteu'] == 1, 3, indivim['actrec'])
@@ -118,7 +119,7 @@ def create_indivim(year=2006):
     indivim['actrec'] = where(filter5 is True, 7, indivim['actrec'])
     indivim['actrec'] = where(indivim['acteu'] is None, 9, indivim['actrec'])
 
-    
+    print sorted(indivim.columns)
     save_temp(indivim, name="indivim", year=year)
     del erfind, eecind, indivim
     print 'indivim saved'
@@ -188,4 +189,4 @@ if __name__ == '__main__':
     year = 2006
     create_indivim()
     create_enfnn()
-    manually_remove_errors(year=year)
+#     manually_remove_errors(year=year)

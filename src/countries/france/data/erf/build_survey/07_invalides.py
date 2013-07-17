@@ -27,7 +27,6 @@ def invalide(year = 2006):
     
     print 'Entering 07_invalides: construction de la variable invalide NOTFUNCTIONNAL NAOW'
     
-    return
 # # # Invalides
 # # #inv = caseP (vous), caseF (conj) ou case G, caseI, ou caseR (pac)
 
@@ -45,9 +44,11 @@ def invalide(year = 2006):
     print 'Etape 1 : création de la df invalides'
     print '    1.1 : déclarants invalides'
     final = load_temp(name="final", year=year)
+
     invalides = final.xs(["noindiv","idmen","caseP","caseF","idfoy","quifoy","maahe","rc1rev"], axis=1)
     
     print invalides['rc1rev'].value_counts()
+    print invalides['maahe'].describe()
     
     for var in ["caseP", "caseF"]:  
         assert invalides[var].notnull().all(), 'présence de NaN dans %s' %(var)
@@ -55,16 +56,21 @@ def invalide(year = 2006):
     # Les déclarants invalides
     invalides['inv'] = False
     invalides['inv'][(invalides['caseP']==1) & (invalides['quifoy']==0)] = True
-    print invalides["inv"].sum(), " invalides déclarants"
+    print invalides["inv"].sum(), " invalides déclarant"
 
-    #Les personnes qui touchent l'aah dans l'enquête emploi
+
+    #Les personnes qui touchent déclarent un montant aah dans l'enquête emploi :
     invalides['inv'][(invalides['maahe']>0)] = True
-    invalides['inv'][(invalides['rc1rev']==4)] = True #TODO: vérifier le format.
-    print invalides["inv"].sum(), " invalides qui touchent des alloc"
-
-    print_id(invalides)
-
-
+    print invalides["inv"].sum(), " invalides qui touchent des alloc + invalides déclarant avec montant"
+     
+    #Les personnes qui déclarent toucher l'aah sans déclarer le montant :
+    invalides['1er_chiffre'] = invalides['rc1rev']//10
+    invalides['2nd_chiffre'] = invalides['rc1rev'] - 10*invalides['1er_chiffre']
+     
+    invalides['inv'][(invalides['1er_chiffre']==4) | (invalides['2nd_chiffre']==4)] = True
+    print invalides["inv"].sum(), " invalides qui touchent des alloc + tout invalides déclarant"
+    del invalides['2nd_chiffre'], invalides['1er_chiffre']
+    
 # # # Les conjoints invalides
 # # 
 # # #men_inv_conj <- invalides[c("idmen","caseF","quifoy")] 
@@ -97,6 +103,7 @@ def invalide(year = 2006):
     
     print len(invalides[inv_conj_condition]), "invalides conjoints"
     print invalides["inv"].sum(), " invalides déclarants et invalides conjoints"
+    
     
 # # # Enfants invalides et garde alternée
 # # 
@@ -139,34 +146,20 @@ def invalide(year = 2006):
     foy_inv_pac['naia'] = None
     foy_inv_pac['type_pac'] = None
     foy_inv_pac['alt'] = foy_inv_pac['alt'].fillna(False)
+    foy_inv_pac['alt'][foy_inv_pac.alt.isnull()] = False
     
-
-    print foy_inv_pac['inv'].describe()
-    invalides['alt'] = 0
-    foy_inv_pac['alt'][foy_inv_pac.alt.isnull()] = 0
-    invalides = invalides.merge(foy_inv_pac, on=["noindiv","inv","alt"])
-
-    invalides = invalides.drop_duplicates(['noindiv', 'inv', 'alt'], take_last=True)
-# =======
-#     print foy_inv_pac.inv.value_counts() # TODO: JS : trop peu de True là-dedans
-#     print foy_inv_pac.alt.value_counts() #
-# 
-# 
-#     print  len(invalides), len(foy_inv_pac)
-#     print invalides.inv.value_counts()
-# >>>>>>> 67cd9a43177cf3f6f72521cda59dae02485df1e3
+    invalides = invalides.merge(foy_inv_pac, on=["noindiv"], how='left')
     
-    invalides = invalides.merge(foy_inv_pac, on='noindiv', how='left')
-    invalides['inv'] = where(invalides['inv_y']==True, invalides['inv_y'], invalides['inv_x'])
-    invalides['alt'] = where(invalides['inv_y']==True, invalides['inv_y'], invalides['inv_x'])
+    invalides.inv_y = invalides.inv_y.fillna(False)
+    invalides['inv'] = where(invalides.inv_y, True, invalides.inv_x)
+    invalides['alt'] = invalides['alt'].fillna(False)
+    
     
     invalides = invalides.loc[:, ["noindiv","idmen","caseP","caseF","idfoy","quifoy", "inv", 'alt']]
-    invalides['alt'].fillna(False, inplace=True)
-    
     print invalides.inv.value_counts()
-    invalides = invalides.drop_duplicates(['noindiv', 'inv', 'alt'], take_last=True)
+
     del foy_inv_pac, pacIndiv
-    
+
 # # # Initialisation des NA sur alt et inv
 # # invalides[is.na(invalides$inv), "inv"] <- 0
 # # table(invalides[,c("alt","inv")],useNA="ifany")
@@ -177,10 +170,12 @@ def invalide(year = 2006):
     print ''
     print 'Etape 2 : Initialisation des NA sur alt et inv'
     assert invalides["inv"].notnull().all() & invalides.alt.notnull().all()
-    final = final.merge(invalides.loc[:, ['noindiv', 'inv', 'alt']], on='noindiv', how='left')
-    del invalides
+    print len(final), len(invalides)
     
-    print final.inv.value_counts()    
+    final["inv"] = invalides["inv"] ; final['alt'] = invalides['alt']
+    assert final["inv"].notnull().all() & final.alt.notnull().all(), 'présence de NaN dans les colonnes inv ou alt de final'
+
+    del invalides
     control(final, debug=True)
 
     save_temp(final, name='final', year=year)

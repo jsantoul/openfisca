@@ -22,7 +22,7 @@ def create_fip(year = 2006): # message('03_fip')
     """
     
     df = DataCollection(year=year)
-    
+
     print 'Démarrer 03_fip'
 # # anaisenf: année de naissance des PAC
 # erfFoyVar <- c('anaisenf','declar')
@@ -367,6 +367,7 @@ def create_fip(year = 2006): # message('03_fip')
     fip['type_pac'] = 0 ; fip['key'] = 0
     
     print fip.duplicated('noindiv').value_counts()
+    print sorted(fip.columns)
     save_temp(fip, name="fipDat", year=year)
     del fip, fip1, individec1, indivifip, indivi, pac
     print 'fip sauvegardé'

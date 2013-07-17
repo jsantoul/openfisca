@@ -24,7 +24,7 @@ from pandas import concat, DataFrame
 print('04_famille: construction de la table famille')
 ##***********************************************************************/
 
-def subset_base(base,famille):
+def subset_base(base, famille):
     """
     generates a dataframe containing the values of base that are not already in famille
     """
@@ -637,7 +637,8 @@ def famille(year=2006):
     
     famille['noifam'] = famille['noifam'].astype('int')
     print famille['quifam'].value_counts()
-    
+    print sorted(famille.columns)
+
     famille_check = famille
     famille = famille.loc[:, ['noindiv', 'quifam', 'noifam']]
     famille.columns = ['noindiv', 'quifam', 'idfam']

@@ -78,7 +78,7 @@ def create_totals(year=2006):
                              zchoi = "choi2", 
                              zrsti = "rsti2",
                              zalri = "alr2"), inplace=True)
-    
+
     if not (set(list(indivim.noindiv)) >  set(list(indivi_i.noindiv)) ):
         raise Exception("Individual ")  
     indivim.set_index("noindiv", inplace=True)
@@ -97,7 +97,7 @@ def create_totals(year=2006):
     
     indivi.loc[fip_imp,"idfoy"] = nan
     
-## Certains FIP (ou du moins avec revenus imputés) ont un num?ro de déclaration d'impôt ( pourquoi ?)
+## Certains FIP (ou du moins avec revenus imputés) ont un numéro de déclaration d'impôt ( pourquoi ?)
 
     
     fip_has_declar = and_(fip_imp, indivi.declar1.notnull())
@@ -308,7 +308,7 @@ def create_totals(year=2006):
     
     myvars = ["noindiv", "noi", "idmen", "idfoy", "quifoy", "wprm",
                             "age","agem","quelfic","actrec", "quimen",
-                            "nbsala","titc","statut","txtppb","chpub","prosa","encadr"]
+                            "nbsala","titc","statut","txtppb","chpub","prosa","encadr", "maahe", "rc1rev"]
     
     if not(len(set(myvars).difference(set(indivi.columns))) == 0):
         print set(myvars).difference(set(indivi.columns))
@@ -322,6 +322,7 @@ def create_totals(year=2006):
 
     print ''
     print 'Etape 6 : Création des variables descriptives'
+    print indivi.columns
     print '    6.1 : variable activité'
     indivi['activite'] = None
     indivi['activite'][indivi['actrec']<=3] = 0
@@ -492,7 +493,7 @@ def create_totals(year=2006):
 #     tot2['idfoy'] += 1
 
     print_id(tot2)
-    
+
     tot3 = tot2
     # TODO: check where they come from
     tot3 = tot3.drop_duplicates(cols='noindiv')
@@ -533,7 +534,7 @@ def create_totals(year=2006):
     
     save_temp(tot3, name='tot3', year=year)
     control(tot3)
-    
+    print tot3.columns
     del tot2, allvars, tot3, vars2
     print 'tot3 sauvegardé'
     gc.collect()
@@ -578,7 +579,7 @@ def create_final(year=None):
     final['caseP'] = final.caseP.fillna(False) 
     final['caseF'] = final.caseF.fillna(False)
     print_id(final)
-    
+    print sorted(final.columns)
     save_temp(final, name='final', year=year)
     print 'final sauvegardé'
     del sif, final

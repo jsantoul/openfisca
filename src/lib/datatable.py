@@ -311,19 +311,19 @@ class DataTable(object):
                     if not col.name in self.table3[ent]:
                         missing_col.append(col.name)
                         self.table3[ent][col.name] = col._default
-                    #try:
-                    if True:
-                        print self.table3[ent][col.name]
-                        print col.name
+                    try:
+#                     if True:
+#                         print self.table3[ent][col.name]
+#                         print col.name
                         if self.table3[ent][col.name].isnull().any():
                             self.table3[ent][col.name].fillna(col._default, inplace=True)
                         self.table3[ent][col.name] = self.table3[ent][col.name].astype(col._dtype)
-#                     except:
-#                         print self.table3[ent].columns
-#                         print col.name
+                    except:
+                        print self.table3[ent].columns
+                        print col.name
 #                         
-#                         print ent
-#                         raise Exception("Impossible de lire la variable suivante issue des données d'enquête :\n %s \n  " %col.name) 
+                        print ent
+                        raise Exception("Impossible de lire la variable suivante issue des données d'enquête :\n %s \n  " %col.name) 
                 if ent == 'foy':
                     self.table3[ent] = self.table3[ent].to_sparse(fill_value=0)       
                  
@@ -419,7 +419,7 @@ class DataTable(object):
                 print ("The %s entity variable %s, is called to set an individual variable" 
                                % (col.entity,varname) ) 
 
-                # ce aui suit est copie sur propagate_to_members
+                # ce aui suit est copié sur propagate_to_members
                 value = self.get_value(varname, ent)
                 try:
                     enum = self.description.get_col('qui'+ent).enum
@@ -623,7 +623,7 @@ class DataTable(object):
                 return temp
 
             
-    def set_value(self, varname, value, entity = None, opt = None):
+    def set_value(self, varname, value, entity = None, _option = None):
         '''
         Sets the value of varname using index and opt
         
@@ -641,10 +641,10 @@ class DataTable(object):
         if entity is None:
             entity = "ind"
 
-        if opt is None:
+        if _option is None:
             idx = self.index[entity][0]
         else:
-            idx = self.index[entity][opt]
+            idx = self.index[entity][_option]
         col = self.description.get_col(varname)
         dtyp = col._dtype
         if self.num_table == 1:
@@ -658,8 +658,33 @@ class DataTable(object):
     
 
     # TODO: 
+    def dispatch_value(self, varname, func, entity):
+        """
+        entity est l'intité des gens dont on doit mettre la valeur à zéro. Mais doit-on l'inclure ici ?
+        Plan d'action : on précise une varname. On récupère sa colonne. On récupère les valeurs pour les emplacements
+        [0] puis on applique la fonction.
+        
+        Exemple : fonction uniforme : prendre le nb d'enfants et diviser la qqt récupérée par le nb d'enfants éligibles
+        """
+        QUIFOY = ['vous', 'conj', 'pac1','pac2','pac3','pac4','pac5','pac6','pac7','pac8','pac9']
+        QUIFAM = ['chef', 'part', 'enf1','enf2','enf3','enf4','enf5','enf6','enf7','enf8','enf9']
+        QUIMEN = ['pref', 'cref', 'enf1','enf2','enf3','enf4','enf5','enf6','enf7','enf8','enf9']
+        # à répartir
+        self.propagate_to_members(varname, entity='ind')
+        
+#         idx = self.index["ind"][_option] #On ventile tjrs sur les ind et il faut tout préciser
+        self.set_value(varname, value=0, entity=entity, _option=None) # On remplace la valeur du chef par des zéros
+        
+        agregates = self._get_value1(varname, entity='ind', opt=None) # Il faut que ce soit le vecteur de toutes les valeurs
+        dispatched_values = func(agregates)
+        
+        self.set_value(varname, value = dispatched_values, entity='ind')
+        
+        raise NotImplementedError
+    
+    
     def to_pytables(self, fname): 
-        NotImplementedError   
+        raise NotImplementedError   
 
     def to_csv(self, fname):
         self.table.to_csv(fname)

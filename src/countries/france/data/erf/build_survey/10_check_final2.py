@@ -36,35 +36,14 @@ def final_check(year=2006):
         varlist.append(varname)
     
     varlist = set(varlist)
-    columns = final2.columns ; 
-    columns = set(columns)
+#     columns = final2.columns ; 
+#     columns = set(columns)
     
-    print varlist.difference(columns)
-    print final2.loc[final2.idfoy==603018901, 
-                       ['idfoy', 'quifoy', 'idfam', 'quifam', 'idmen', 'quimen', 'noi']].to_string()
-#     print final2
-#     print finalT
-# #     control(final2, debug=True, verbose=True, verbose_columns=['idfam', 'quifam'])
-# #     control(finalT, debug=True, verbose=True, verbose_columns=['idfam', 'quifam'])
-#     print 'FAMILLE--------------'
-#     print final2.quifam.value_counts()
-#     print finalT.quifam.value_counts()
-#     print ''
-#     print 'FOYER------------------'
-#     print final2.quifoy.value_counts()
-#     print finalT.quifoy.value_counts()
-#     print ''
-#     print 'MENAGES-----------------'
-#     print final2.quimen.value_counts()
-#     print finalT.quimen.value_counts()
-#     
-#     print ''
-#     print final2.age.describe()
-#     print finalT.age.describe()
-# #     age_data = final2['age'].value_counts().reset_index()
-# #     age_data = age_data.sort_index(by='index', ascending='True')
-# #     print age_data.to_string()
-# #     print final2.loc[final2['quifam']==2, ['quifam', 'age']].describe()
+#     print varlist.difference(columns)
+#     print final2.loc[final2.idfoy==603018901, 
+#                        ['idfoy', 'quifoy', 'idfam', 'quifam', 'idmen', 'quimen', 'noi']].to_string()
+
+    print final2.columns
 
     return
 

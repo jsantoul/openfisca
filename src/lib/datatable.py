@@ -165,6 +165,49 @@ class DataTable(object):
                 
                 
         
+    def propagate_to_members2(self, varname, entity):
+        """
+        if entity is 'ind': Set the variable of all individual to the value of the (head of) entity
+        else              : Set the varible of all entity to the value of the enclosing entity of varname
+        """
+        col = self.description.get_col(varname)
+        from_ent = col.entity
+        value = self.get_value(varname)
+        if self.num_table == 1:
+            try:
+                enum = self.description.get_col('qui'+from_ent).enum
+            except:
+                enum = self._inputs.description.get_col('qui'+from_ent).enum
+        head = self.index[from_ent][0]['idxIndi']  
+        for member in enum:  
+                value_member = value[head] 
+                select_unit = self.index[from_ent][member[1]]['idxUnit']
+                value_member = value_member[select_unit]
+                self.set_value(varname, value_member, from_ent, _option = member[1])  
+
+                                
+        if self.num_table == 3:  
+            # Should be useless
+            return self._get_value3(varname, entity = entity, opt = range(10))
+            
+#             from_ent = col.entity
+#             idx_to = self.index[entity]
+#             if entity == 'ind':
+#                 if from_ent == 'ind':
+#                     raise Exception('Why propagate %s which is already an "ind" entity ' % (varname))
+#                 else:
+#                     idx_to = idx_to[from_ent]
+#                     return value[idx_to]
+#             else: 
+#                 if from_ent != 'men':
+#                     raise Exception('Impossible to propagate %s which is not a "men" entity to %s'
+#                     'because there is no inclusion between fam and foy' % (varname, entity))
+#                 else:
+#                     # select head of entity and look for their from_ent number
+#                     head = idx_to[0]['idxIndi']
+#                     idx_from = self.index['ind'][from_ent][head]
+#                     return value[idx_from]
+         
     def propagate_to_members(self, varname, entity):
         """
         if entity is 'ind': Set the variable of all individual to the value of the (head of) entity
@@ -184,7 +227,7 @@ class DataTable(object):
                 select_unit = self.index[from_ent][member[1]]['idxUnit']
                 value_member = value_member[select_unit]
                 if varname != 'wprm':
-                    self.set_value(varname, value_member, from_ent, opt = member[1])
+                    self.set_value(varname, value_member, from_ent, _option = member[1])
                                 
         elif self.num_table == 3:  
             # Should be useless
@@ -208,7 +251,6 @@ class DataTable(object):
 #                     idx_from = self.index['ind'][from_ent][head]
 #                     return value[idx_from]
          
-
 
     def populate_from_survey_data(self, fname, year = None):
         '''
@@ -660,26 +702,41 @@ class DataTable(object):
     # TODO: 
     def dispatch_value(self, varname, func, entity):
         """
-        entity est l'intité des gens dont on doit mettre la valeur à zéro. Mais doit-on l'inclure ici ?
+        entity est l'entité des gens dont on doit mettre la valeur à zéro. Mais doit-on l'inclure ici ?
         Plan d'action : on précise une varname. On récupère sa colonne. On récupère les valeurs pour les emplacements
         [0] puis on applique la fonction.
         
         Exemple : fonction uniforme : prendre le nb d'enfants et diviser la qqt récupérée par le nb d'enfants éligibles
         """
-        QUIFOY = ['vous', 'conj', 'pac1','pac2','pac3','pac4','pac5','pac6','pac7','pac8','pac9']
-        QUIFAM = ['chef', 'part', 'enf1','enf2','enf3','enf4','enf5','enf6','enf7','enf8','enf9']
-        QUIMEN = ['pref', 'cref', 'enf1','enf2','enf3','enf4','enf5','enf6','enf7','enf8','enf9']
         # à répartir
-        self.propagate_to_members(varname, entity='ind')
+        col = self.description.get_col(varname)
+        from_ent = col.entity
+        value = self.get_value(varname)
+        if self.num_table == 1:
+            try:
+                enum = self.description.get_col('qui'+from_ent).enum
+            except:
+                enum = self._inputs.description.get_col('qui'+from_ent).enum
+            head = self.index[from_ent][0]['idxIndi']
+            for member in enum:      
+                value_member = value[head] 
+                select_unit = self.index[from_ent][member[1]]['idxUnit']
+                value_member = value_member[select_unit]
+
+        agregates = self.get_value(varname, entity='ind', opt=None) # Il faut que ce soit le vecteur de toutes les valeurs
+        keys = func(agregates) 
+
+        #On calcule les clés dans un autre vecteur
         
 #         idx = self.index["ind"][_option] #On ventile tjrs sur les ind et il faut tout préciser
-        self.set_value(varname, value=0, entity=entity, _option=None) # On remplace la valeur du chef par des zéros
         
-        agregates = self._get_value1(varname, entity='ind', opt=None) # Il faut que ce soit le vecteur de toutes les valeurs
-        dispatched_values = func(agregates)
-        
+        # On modifie proprement la valeur des presta à l'intérieur des familles.
+        dispatched_values = keys*value_member
+        # On intègre les valeurs dans la datatable
         self.set_value(varname, value = dispatched_values, entity='ind')
-        
+        self.set_value(varname, value=0, entity=entity, _option=None) # On remplace la valeur du chef par des zéros
+
+        #PS : il faudra vraiment qu'on prenne une heure pour qu'on m'explique la nature de ces objets
         raise NotImplementedError
     
     

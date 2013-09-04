@@ -1,0 +1,84 @@
+<NODE code = 'root'>
+  <NODE description="Paramètres généraux" code="param_gen" >
+  	<CODE description="SMIG 48h" code="smig_48h" format="float" type="monetary">
+	    <VALUE valeur="255.632" deb="2011-05-01" fin="2011-12-31" />
+	    <VALUE valeur="242.111" deb="2010-07-01" fin="2011-12-31" />
+	    <VALUE valeur="230.256" deb="2009-08-01" fin="2010-12-31" />
+	    <VALUE valeur="221.520" deb="2008-07-01" fin="2009-12-31" />
+	    <VALUE valeur="209.456" deb="2007-07-01" fin="2008-12-31" />
+	    <VALUE valeur="200.928" deb="2006-07-01" fin="2007-12-31" />
+	    <VALUE valeur="193.856" deb="2005-09-01" fin="2006-12-31" />
+	    <VALUE valeur="187.824" deb="2004-07-01" fin="2005-12-31" />
+	    <VALUE valeur="180.752" deb="2003-07-01" fin="2004-12-31" />
+	    <VALUE valeur="172.224" deb="2002-07-01" fin="2003-12-31" />
+	    <VALUE valeur="165.152" deb="2001-08-01" fin="2002-12-31" />
+	    <VALUE valeur="156.624" deb="2000-05-11" fin="2001-12-31" />
+	   	<VALUE valeur="150.592" deb="1999-08-19" fin="2000-05-10" />
+	   	<VALUE valeur="148.512" deb="1999-05-01" fin="1999-08-18" />
+	   	<VALUE valeur="142.480" deb="1998-08-20" fin="1999-04-30" />
+	   	<VALUE valeur="139.984" deb="1997-11-08" fin="1998-08-19" />
+    	<VALUE valeur="133.952" deb="1997-07-20" fin="1997-11-07" />
+	   	<VALUE valeur="131.872" deb="1996-09-09" fin="1997-07-19" />
+	    <VALUE valeur="129.792" deb="1996-05-01" fin="1996-09-08" />
+	    <VALUE valeur="123.760" deb="1995-05-01" fin="1996-04-31" />
+	 </CODE>
+	 <CODE description="SMIG 40h" code="smig_40h" format="float" type="monetary">
+		<VALUE valeur="216.306" deb="2011-05-01" fin="2011-12-31" />
+    	<VALUE valeur="205.040" deb="2010-07-01" fin="2011-12-31" />
+    	<VALUE valeur="195.160" deb="2009-08-01" fin="2010-12-31" />
+    	<VALUE valeur="187.880" deb="2008-07-01" fin="2009-12-31" />
+    	<VALUE valeur="177.828" deb="2007-07-01" fin="2008-12-31" />
+    	<VALUE valeur="170.721" deb="2006-07-01" fin="2007-12-31" />
+    	<VALUE valeur="164.827" deb="2005-09-01" fin="2006-12-31" />
+    	<VALUE valeur="159.800" deb="2004-07-01" fin="2005-12-31" />
+    	<VALUE valeur="153.906" deb="2003-07-01" fin="2004-12-31" />
+    	<VALUE valeur="146.799" deb="2002-07-01" fin="2003-12-31" />
+    	<VALUE valeur="140.905" deb="2001-08-01" fin="2002-12-31" />
+    	<VALUE valeur="133.795" deb="2000-05-11" fin="2001-12-31" />
+    	<VALUE valeur="128.771" deb="1999-08-19" fin="2000-05-10" />
+    	<VALUE valeur="126.691" deb="1999-05-01" fin="1999-08-18" />
+    	<VALUE valeur="121.664" deb="1998-08-20" fin="1999-04-30" />
+    	<VALUE valeur="119.237" deb="1997-11-08" fin="1998-08-19" />
+    	<VALUE valeur="114.211" deb="1997-07-20" fin="1997-11-07" />
+    	<VALUE valeur="112.132" deb="1996-09-09" fin="1997-07-19" />
+    	<VALUE valeur="110.051" deb="1996-05-01" fin="1996-09-08" />
+    	<VALUE valeur="105.024" deb="1995-05-01" fin="1996-04-31" />    	
+      </CODE>
+  </NODE>
+  <NODE description="Pensions" code="pension" >
+    <NODE description="Régime des salariés non agricoles" code="rsna" >
+      <CODE description="Age légal de de départ à la retraite" code="age_legal" format="integer">
+        <VALUE valeur="60" deb="1974-01-01" fin="2012-12-31" />
+      </CODE>
+      <CODE description="Age minimum de départ à la retraite anticipée" code="age_dep_anticip" format="integer">
+        <VALUE valeur="50" deb="1974-01-01" fin="2012-12-31" />
+      </CODE>
+       <CODE description="Durée normale du stage requis" code="stage_requis" format="integer">
+        <VALUE valeur="10" deb="1974-01-01" fin="2012-12-31" />
+      </CODE>
+      <CODE description="Durée du stage dérogatoire" code="stage_derog" format="integer">
+        <VALUE valeur="5" deb="1974-01-01" fin="2012-12-31" />
+      </CODE>
+      <CODE description="Période de remplacement de base" code="periode_remp_base" format="integer">
+        <VALUE valeur="10" deb="1974-01-01" fin="2012-12-31" />
+      </CODE>
+      <CODE description="Taux d'annuité de base" code="taux_ann_base" format="percent">
+        <VALUE valeur=".04" deb="1974-01-01" fin="2012-12-31" />
+      </CODE>
+      <CODE description="Taux d'annuité supplémentaire" code="taux_ann_sup" format="percent">
+        <VALUE valeur=".02" deb="1974-01-01" fin="2012-12-31" />
+      </CODE>
+      <CODE description="Plafonnement du taux de pension" code="plaf_taux_pension" format="percent">
+        <VALUE valeur=".8" deb="1974-01-01" fin="2012-12-31" />
+      </CODE>
+      <NODE description="Pension minimale (en part de SMIG)" code="pension_min">
+      	<CODE description="Inférieur à la durée du stage requis" code="inf" format="percent">
+          <VALUE valeur=".5" deb="1974-01-01" fin="2012-12-31" />
+        </CODE>
+      	<CODE description="Supérieur à la durée du stage requis" code="sup" format="percent">
+          <VALUE valeur=".66666" deb="1974-01-01" fin="2012-12-31" />
+        </CODE>
+      </NODE>  
+    </NODE>
+  </NODE>
+</NODE>

@@ -30,7 +30,7 @@ import numpy as np
 from numpy import logical_not as not_
 from src.lib.columns import EnumCol, IntCol, BoolCol, AgesCol, FloatCol, DateCol, Prestation, BoolPresta, IntPresta, EnumPresta
 
-from src.countries.tunisia import ENTITIES_INDEX
+from src.countries.tunisia_pension import ENTITIES_INDEX
 
 class Scenario(object):
     def __init__(self):
@@ -44,10 +44,10 @@ class Scenario(object):
         self.declar = {}
         
         # menage est un dict de dict la clé est la pref
-        self.menage = {0:{'loyer':500,'so':3, 'code_postal':69001}}
+        self.menage = {}
 
         # on ajoute un individu, déclarant et chef de famille
-        self.addIndiv(0, datetime(1975,1,1).date(), 'vous', 'chef')
+        self.addIndiv(0, datetime(1955,1,1).date(), 'vous', 'chef')
     
         self.nmen = None
         self.xaxis = None
@@ -168,9 +168,7 @@ class Scenario(object):
                 yield person
 
     def addIndiv(self, noi, birth, quifoy, quifam):
-        self.indiv.update({noi:{'birth':birth, 
-                                'inv': 0,
-                                'activite':0,
+        self.indiv.update({noi:{'birth':birth,
                                 'quifoy': 'none',
                                 'quifam': 'none',
                                 'noidec':  0,
@@ -322,15 +320,15 @@ class Scenario(object):
 
         if nmen>1:
             if self.maxrev is None:
-                raise Exception('tunisia.utils.Scenario: self.maxrev should not be None')
+                raise Exception('tunisia_pension.utils.Scenario: self.maxrev should not be None')
             maxrev = self.maxrev      
             datatable.MAXREV = maxrev
             
             if self.xaxis is None:
-                raise Exception('tunisia.utils.Scenario: self.xaxis should not be None')
+                raise Exception('tunisia_pension.utils.Scenario: self.xaxis should not be None')
             
             xaxis = self.xaxis    
-            axes = build_axes('tunisia')
+            axes = build_axes('tunisia_pension')
             var = None
             
             for axe in axes:
@@ -353,7 +351,8 @@ class Scenario(object):
             datatable._isPopulated = True
         
 
-country = "tunisia"
+
+country = "tunisia_pension"
 XAXIS_PROPERTIES =  of_import('','XAXIS_PROPERTIES', country)
 
 
@@ -395,7 +394,7 @@ def build_axes(country):
     from src.lib.utils import of_import
     Xaxis = of_import('utils','Xaxis', country)
     axes = []
-    for col_name in XAXIS_PROPERTIES: 
+    for col_name in XAXIS_PROPERTIES:
         axe = Xaxis(col_name, country)
         axes.append(axe)
     del axe

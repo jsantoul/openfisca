@@ -13,16 +13,13 @@ ENTITIES_INDEX = ['men', 'foy']
 CURRENCY = u"DT"
 
 
-# Some variables needed by the test case graph widget
 # REVENUES_CATEGORIES 
 
-XAXIS_PROPERTIES = { 'sali': {
-                              'name' : 'sal',
+XAXIS_PROPERTIES = { 'sal0': {
+                              'name' : 'sal0',
                               'typ_tot' : {'salsuperbrut' : 'Salaire super brut',
                                            'salbrut': 'Salaire brut',
                                            'sal':  'Salaire imposable',
                                            'salnet': 'Salaire net'},
                               'typ_tot_default' : 'sal'},
                              }
-
-# Some variables used by other plugins
